@@ -1,26 +1,51 @@
 <script setup lang="ts">
-import Versions from './components/Versions.vue'
+import { onMounted, watch } from 'vue'
+import { useThemeStore } from './stores/theme'
+import ThemeSwitch from './components/ThemeSwitch.vue'
+import { darkTheme, lightTheme, NGlobalStyle } from 'naive-ui'
 
-const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+const themeStore = useThemeStore()
+
+onMounted(() => {
+  themeStore.initTheme()
+})
+
+watch(
+  () => themeStore.isDark,
+  (val) => {
+    // 将主题变量添加到body的CSS变量中
+    const cssVars = val ? darkTheme.common : lightTheme.common
+
+    for (const key in cssVars) {
+      document.body.style.setProperty(`--n-${key}`, cssVars[key])
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <img alt="logo" class="logo" src="./assets/electron.svg" />
-  <div class="creator">Powered by electron-vite</div>
-  <div class="text">
-    Build an Electron app with
-    <span class="vue">Vue</span>
-    and
-    <span class="ts">TypeScript</span>
-  </div>
-  <p class="tip">Please try pressing <code>F12</code> to open the devTool</p>
-  <div class="actions">
-    <div class="action">
-      <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">Documentation</a>
-    </div>
-    <div class="action">
-      <a target="_blank" rel="noreferrer" @click="ipcHandle">Send IPC</a>
-    </div>
-  </div>
-  <Versions />
+  <n-config-provider :theme="themeStore.isDark ? darkTheme : null">
+    <n-message-provider>
+      <div class="min-h-100px" :class="{ dark: themeStore.isDark }">
+        <nav class="p-4 flex justify-end">
+          <ThemeSwitch />
+        </nav>
+        <router-view></router-view>
+      </div>
+    </n-message-provider>
+
+    <n-global-style />
+  </n-config-provider>
 </template>
+
+<style>
+/* 全局样式 */
+:root {
+  --primary-color: #18a058;
+}
+
+.dark {
+  --primary-color: #63e2b7;
+}
+</style>
