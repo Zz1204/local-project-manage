@@ -15,6 +15,9 @@ dependencies:
   '@electron-toolkit/utils':
     specifier: ^4.0.0
     version: 4.0.0(electron@35.1.4)
+  electron-log:
+    specifier: ^5.3.3
+    version: 5.3.3
   electron-updater:
     specifier: ^6.3.9
     version: 6.6.2
@@ -2805,6 +2808,11 @@ packages:
       - electron-builder-squirrel-windows
       - supports-color
     dev: true
+
+  /electron-log@5.3.3:
+    resolution: {integrity: sha512-ZOnlgCVfhKC0Nef68L0wDhwhg8nh5QkpEOA+udjpBxcPfTHGgbZbfoCBS6hmAgVHTAWByHNPkHKpSbEOPGZcxA==}
+    engines: {node: '>= 14'}
+    dev: false
 
   /electron-publish@25.1.7:
     resolution: {integrity: sha512-+jbTkR9m39eDBMP4gfbqglDd6UvBC7RLh5Y0MhFSsc6UkGHj9Vj9TWobxevHYMMqmoujL11ZLjfPpMX+Pt6YEg==}

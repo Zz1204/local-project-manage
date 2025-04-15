@@ -1,26 +1,47 @@
 import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { exec } from 'child_process'
+import {
+  createWindow,
+  createWindowForRoute,
+  closeWindow,
+  closeAllWindows,
+  getAllWindows,
+  type WindowOptions
+} from './window-manager'
 
-function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+// 第一步：在所有其他导入前设置控制台编码
+if (process.platform === 'win32') {
+  // 方法1：使用转义序列设置UTF-8模式
+  process.stdout.write('\x1b%G')
+
+  // 方法2：作为应用初始化的一部分设置代码页
+  app.whenReady().then(() => {
+    exec('chcp 65001', (error) => {
+      if (error) {
+        console.error('设置控制台代码页失败:', error)
+      }
+    })
+  })
+}
+
+// 导入日志模块（导入后就会开始记录日志）
+import log from './logger'
+
+// 应用启动日志
+log.info('应用启动')
+
+function createMainWindow(): void {
+  // 使用窗口管理器创建主窗口
+  const mainWindow = createWindow({
+    name: 'main', // 设置窗口名称为main
     width: 900,
     height: 670,
     minWidth: 900,
     minHeight: 670,
-    show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
-  })
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -28,13 +49,9 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+  mainWindow.on('closed', () => {
+    closeAllWindows()
+  })
 }
 
 // This method will be called when Electron has finished
@@ -61,12 +78,68 @@ app.whenReady().then(() => {
     return app.getLocale()
   })
 
-  createWindow()
+  // 窗口管理相关IPC处理
+  // 打开新窗口并加载指定路由
+  ipcMain.handle('window:open-route', (_, route: string, options = {}) => {
+    try {
+      // 记录传入的窗口选项，帮助调试
+      log.info('打开新窗口:', route)
+      log.info('窗口选项:', JSON.stringify(options, null, 2))
+
+      // 确保options的类型与WindowOptions兼容
+      const windowOptions = options as WindowOptions
+      createWindowForRoute(route, windowOptions)
+      return true
+    } catch (error) {
+      log.error('打开窗口失败:', error)
+      return false
+    }
+  })
+
+  // 关闭指定窗口
+  ipcMain.handle('window:close', (_, name: string) => {
+    return closeWindow(name)
+  })
+
+  // 获取所有窗口名称
+  ipcMain.handle('window:get-all-names', () => {
+    return Array.from(getAllWindows().keys())
+  })
+
+  // 窗口控制 - 最小化当前窗口
+  ipcMain.on('window:minimize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win && !win.isDestroyed()) {
+      win.minimize()
+    }
+  })
+
+  // 窗口控制 - 最大化/还原当前窗口
+  ipcMain.on('window:toggle-maximize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win && !win.isDestroyed()) {
+      if (win.isMaximized()) {
+        win.unmaximize()
+      } else {
+        win.maximize()
+      }
+    }
+  })
+
+  // 窗口控制 - 关闭当前窗口
+  ipcMain.on('window:close-current', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win && !win.isDestroyed()) {
+      win.close()
+    }
+  })
+
+  createMainWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
 })
 
