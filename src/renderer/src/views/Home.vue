@@ -2,6 +2,7 @@
 import ThemeSwitch from '@renderer/components/theme-switch.vue'
 import LanguageSwitch from '@renderer/components/language-switch.vue'
 import Versions from '@renderer/components/versions.vue'
+import ProjectTree from '@renderer/components/project-tree.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

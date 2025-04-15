@@ -5,12 +5,12 @@ const languageStore = useLanguageStore()
 
 const options = [
   {
-    label: 'English',
-    key: 'en'
-  },
-  {
     label: '中文',
     key: 'zh'
+  },
+  {
+    label: 'English',
+    key: 'en'
   }
 ]
 

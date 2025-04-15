@@ -3,6 +3,11 @@
     "title": "Project Code Library Management",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
-    "welcome": "Welcome to Your App"
+    "welcome": "Welcome to Your App",
+    "newWindow": "New Window"
+  },
+  "project": {
+    "projectList": "Project List",
+    "createProject": "Create Project"
   }
 }

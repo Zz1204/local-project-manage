@@ -3,6 +3,11 @@
     "title": "项目代码库管理",
     "darkMode": "深色模式",
     "lightMode": "浅色模式",
-    "welcome": "欢迎使用您的应用"
+    "welcome": "欢迎使用您的应用",
+    "newWindow": "新窗口"
+  },
+  "project": {
+    "projectList": "项目列表",
+    "createProject": "新建项目"
   }
 }

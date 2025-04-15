@@ -1,17 +1,31 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useThemeStore } from '@renderer/stores/theme'
-import { darkTheme, NGlobalStyle } from 'naive-ui'
+import { darkTheme, dateEnUS, dateZhCN, enUS, NGlobalStyle, zhCN } from 'naive-ui'
+import { useLanguageStore } from '@renderer/stores/language'
 
 const themeStore = useThemeStore()
+const languageStore = useLanguageStore()
 
 onMounted(() => {
   themeStore.initTheme()
 })
+
+const naiveLocale = computed(() => {
+  return languageStore.language === 'zh' ? zhCN : enUS
+})
+
+const naiveDateLocale = computed(() => {
+  return languageStore.language === 'zh' ? dateZhCN : dateEnUS
+})
 </script>
 
 <template>
-  <n-config-provider :theme="themeStore.isDark ? darkTheme : null">
+  <n-config-provider
+    :theme="themeStore.isDark ? darkTheme : null"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+  >
     <n-notification-provider>
       <n-dialog-provider>
         <n-message-provider>
