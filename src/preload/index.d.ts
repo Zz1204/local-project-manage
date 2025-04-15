@@ -5,6 +5,7 @@ declare global {
     electron: ElectronAPI
     api: {
       setNativeTheme: (isDark: boolean) => void
+      getSystemLanguage: () => Promise<string>
     }
   }
 }

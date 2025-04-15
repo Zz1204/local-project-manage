@@ -6,6 +6,10 @@ const api = {
   // 设置原生窗口暗黑模式
   setNativeTheme: (isDark: boolean) => {
     ipcRenderer.send('set-native-theme', isDark)
+  },
+  // 获取系统语言
+  getSystemLanguage: () => {
+    return ipcRenderer.invoke('get-system-language')
   }
 }
 

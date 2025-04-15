@@ -54,6 +54,11 @@ app.whenReady().then(() => {
     nativeTheme.themeSource = isDark ? 'dark' : 'light'
   })
 
+  // 处理获取系统语言
+  ipcMain.handle('get-system-language', () => {
+    return app.getLocale()
+  })
+
   createWindow()
 
   app.on('activate', function () {
