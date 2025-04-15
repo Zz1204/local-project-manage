@@ -37,6 +37,29 @@ const api = {
     close: () => {
       ipcRenderer.send('window:close-current')
     }
+  },
+  // Pinia状态同步相关API
+  pinia: {
+    // 发送Pinia状态变更到主进程
+    syncState: (storeName: string, stateChange: Record<string, unknown>) => {
+      ipcRenderer.send('pinia:sync-state', { storeName, stateChange })
+    },
+    // 注册回调以接收来自主进程的Pinia状态变更
+    onStateChange: (
+      callback: (data: { storeName: string; stateChange: Record<string, unknown> }) => void
+    ): (() => void) => {
+      const listener = (
+        _: Electron.IpcRendererEvent,
+        data: { storeName: string; stateChange: Record<string, unknown> }
+      ): void => {
+        callback(data)
+      }
+      ipcRenderer.on('pinia:state-changed', listener)
+      // 返回取消监听的函数
+      return (): void => {
+        ipcRenderer.removeListener('pinia:state-changed', listener)
+      }
+    }
   }
 }
 

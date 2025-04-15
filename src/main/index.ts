@@ -134,6 +134,23 @@ app.whenReady().then(() => {
     }
   })
 
+  // Pinia状态同步 - 接收状态变更并广播给其他窗口
+  ipcMain.on('pinia:sync-state', (event, data) => {
+    // 记录状态同步信息
+    log.info('收到Pinia状态同步:', data.storeName)
+
+    // 获取发送者窗口ID，用于排除发送者（避免循环同步）
+    const senderId = event.sender.id
+
+    // 获取所有窗口并广播状态变更
+    for (const [, window] of getAllWindows()) {
+      // 跳过发送者窗口
+      if (window.webContents.id !== senderId && !window.isDestroyed()) {
+        window.webContents.send('pinia:state-changed', data)
+      }
+    }
+  })
+
   createMainWindow()
 
   app.on('activate', function () {

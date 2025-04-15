@@ -17,6 +17,12 @@ declare global {
         toggleMaximize: () => void
         close: () => void
       }
+      pinia: {
+        syncState: (storeName: string, stateChange: Record<string, unknown>) => void
+        onStateChange: (
+          callback: (data: { storeName: string; stateChange: Record<string, unknown> }) => void
+        ) => () => void
+      }
     }
   }
 }
