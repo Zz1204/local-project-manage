@@ -49,6 +49,8 @@ const folderOperations = {
       INSERT INTO folders (name, parent_id, description)
       VALUES (?, ?, ?)
     `)
+
+    log.info('创建文件夹', { name, parentId })
     return stmt.run(name, parentId, description)
   },
 
@@ -71,12 +73,14 @@ const folderOperations = {
       SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `)
+    log.info('更新文件夹', { id, name, description })
     return stmt.run(name, description, id)
   },
 
   // 删除文件夹
   deleteFolder: (id: number) => {
     const stmt = db.prepare('DELETE FROM folders WHERE id = ?')
+    log.info('删除文件夹', { id })
     return stmt.run(id)
   }
 }
@@ -87,6 +91,7 @@ const settingsOperations = {
   getSetting: (key: string) => {
     const stmt = db.prepare('SELECT value FROM settings WHERE key = ?')
     const result = stmt.get(key)
+    log.info('获取设置', { key, result })
     return result ? result.value : null
   },
 
@@ -96,6 +101,7 @@ const settingsOperations = {
       INSERT OR REPLACE INTO settings (key, value, updated_at)
       VALUES (?, ?, CURRENT_TIMESTAMP)
     `)
+    log.info('设置值', { key, value })
     return stmt.run(key, value)
   }
 }
