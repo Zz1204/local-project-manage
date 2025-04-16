@@ -19,8 +19,8 @@ function initDatabase(): void {
         name TEXT NOT NULL,
         parent_id INTEGER,
         description TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
+        updated_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
         FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
       )
     `)
@@ -30,7 +30,7 @@ function initDatabase(): void {
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
       )
     `)
 
@@ -70,7 +70,7 @@ const folderOperations = {
   updateFolder: (id: number, name: string, description: string) => {
     const stmt = db.prepare(`
       UPDATE folders
-      SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, description = ?, updated_at = strftime('%s', 'now') * 1000
       WHERE id = ?
     `)
     log.info('更新文件夹', { id, name, description })
@@ -99,7 +99,7 @@ const settingsOperations = {
   setSetting: (key: string, value: string) => {
     const stmt = db.prepare(`
       INSERT OR REPLACE INTO settings (key, value, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
+      VALUES (?, ?, strftime('%s', 'now') * 1000)
     `)
     log.info('设置值', { key, value })
     return stmt.run(key, value)

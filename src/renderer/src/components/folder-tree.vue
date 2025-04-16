@@ -90,7 +90,7 @@ function renderTreeLabel({ option }: { option: TreeOption }): VNode {
 
   return (
     <div class="flex items-center justify-between group">
-      <div class="flex-1 min-w-0">{option.label}</div>
+      <div class="flex-1 min-w-0 truncate">{option.label}</div>
 
       <div
         class="items-center gap-8px hidden group-hover:flex text-18px"
@@ -123,8 +123,8 @@ function renderSwitcherIconWithExpaned({ expanded }: { expanded: boolean }) {
 </script>
 
 <template>
-  <div class="project-tree">
-    <div class="mb-4 flex justify-between items-center">
+  <div class="project-tree h-full flex flex-col">
+    <div class="p-16px flex justify-between items-center">
       <div class="font-bold text-16px">{{ t('folder.folderList') }}</div>
       <div class="flex items-center gap-8px">
         <NButton type="primary" size="tiny" @click="handleRefresh">
@@ -140,17 +140,24 @@ function renderSwitcherIconWithExpaned({ expanded }: { expanded: boolean }) {
       </div>
     </div>
 
-    <NTree
-      block-line
-      show-line
-      :default-expand-all="true"
-      :data="treeData"
-      :selected-keys="selectedKeys"
-      :expanded-keys="expandKeys"
-      :on-update:expanded-keys="handleExpandKeys"
-      :render-label="renderTreeLabel"
-      :render-switcher-icon="renderSwitcherIconWithExpaned"
-      @update:selected-keys="handleSelect"
-    />
+    <div class="flex-1 min-h-0">
+      <n-scrollbar style="height: 100%">
+        <div class="p-x-16px">
+          <NTree
+            block-line
+            show-line
+            virtual-scroll
+            :default-expand-all="true"
+            :data="treeData"
+            :selected-keys="selectedKeys"
+            :expanded-keys="expandKeys"
+            :on-update:expanded-keys="handleExpandKeys"
+            :render-label="renderTreeLabel"
+            :render-switcher-icon="renderSwitcherIconWithExpaned"
+            @update:selected-keys="handleSelect"
+          />
+        </div>
+      </n-scrollbar>
+    </div>
   </div>
 </template>

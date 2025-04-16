@@ -18,11 +18,7 @@ const { t } = useI18n()
       </div>
     </n-layout-header>
     <n-layout position="absolute" class="top-48px! bottom-22px!" has-sider>
-      <n-layout-sider
-        content-style="padding: 16px;height: 100%;"
-        :native-scrollbar="false"
-        bordered
-      >
+      <n-layout-sider content-style="height: 100%;" bordered>
         <folder-tree />
       </n-layout-sider>
       <n-layout content-style="padding: 24px;" :native-scrollbar="false">
