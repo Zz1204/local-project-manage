@@ -25,6 +25,15 @@ function initDatabase(): void {
       )
     `)
 
+    // 创建设置表
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
     log.info('数据库初始化成功')
   } catch (error) {
     log.error('数据库初始化失败:', error)
@@ -72,7 +81,26 @@ const folderOperations = {
   }
 }
 
+// 设置相关的数据库操作
+const settingsOperations = {
+  // 获取设置
+  getSetting: (key: string) => {
+    const stmt = db.prepare('SELECT value FROM settings WHERE key = ?')
+    const result = stmt.get(key)
+    return result ? result.value : null
+  },
+
+  // 设置值
+  setSetting: (key: string, value: string) => {
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO settings (key, value, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+    `)
+    return stmt.run(key, value)
+  }
+}
+
 // 初始化数据库
 initDatabase()
 
-export { folderOperations }
+export { folderOperations, settingsOperations }

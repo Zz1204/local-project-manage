@@ -35,6 +35,10 @@ declare global {
         update: (id: number, name: string, description: string) => Promise<FolderOperationResult>
         delete: (id: number) => Promise<FolderOperationResult>
       }
+      settings: {
+        get: (key: string) => Promise<string | null>
+        set: (key: string, value: string) => Promise<any>
+      }
     }
   }
 }

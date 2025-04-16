@@ -70,6 +70,11 @@ const api = {
     update: (id: number, name: string, description: string) =>
       ipcRenderer.invoke('folder:update', id, name, description),
     delete: (id: number) => ipcRenderer.invoke('folder:delete', id)
+  },
+  // 设置相关的 IPC 通信接口
+  settings: {
+    get: (key: string) => ipcRenderer.invoke('settings:get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value)
   }
 }
 

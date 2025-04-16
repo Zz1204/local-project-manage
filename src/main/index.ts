@@ -9,7 +9,7 @@ import {
   getAllWindows,
   type WindowOptions
 } from './window-manager'
-import { folderOperations } from './database'
+import { folderOperations, settingsOperations } from './database'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -77,6 +77,25 @@ app.whenReady().then(() => {
   // 处理获取系统语言
   ipcMain.handle('get-system-language', () => {
     return app.getLocale()
+  })
+
+  // 设置相关的 IPC 处理
+  ipcMain.handle('settings:get', (_, key: string) => {
+    try {
+      return settingsOperations.getSetting(key)
+    } catch (error) {
+      log.error('获取设置失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('settings:set', (_, key: string, value: string) => {
+    try {
+      return settingsOperations.setSetting(key, value)
+    } catch (error) {
+      log.error('设置失败:', error)
+      throw error
+    }
   })
 
   // 窗口管理相关IPC处理
