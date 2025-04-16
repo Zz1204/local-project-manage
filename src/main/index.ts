@@ -9,6 +9,7 @@ import {
   getAllWindows,
   type WindowOptions
 } from './window-manager'
+import { folderOperations } from './database'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -148,6 +149,55 @@ app.whenReady().then(() => {
       if (window.webContents.id !== senderId && !window.isDestroyed()) {
         window.webContents.send('pinia:state-changed', data)
       }
+    }
+  })
+
+  // 文件夹相关的 IPC 处理
+  ipcMain.handle(
+    'folder:create',
+    (_, name: string, parentId: number | null, description: string) => {
+      try {
+        return folderOperations.createFolder(name, parentId, description)
+      } catch (error) {
+        log.error('创建文件夹失败:', error)
+        throw error
+      }
+    }
+  )
+
+  ipcMain.handle('folder:getAll', () => {
+    try {
+      return folderOperations.getAllFolders()
+    } catch (error) {
+      log.error('获取文件夹列表失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('folder:getChildren', (_, parentId: number | null) => {
+    try {
+      return folderOperations.getChildFolders(parentId)
+    } catch (error) {
+      log.error('获取子文件夹失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('folder:update', (_, id: number, name: string, description: string) => {
+    try {
+      return folderOperations.updateFolder(id, name, description)
+    } catch (error) {
+      log.error('更新文件夹失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('folder:delete', (_, id: number) => {
+    try {
+      return folderOperations.deleteFolder(id)
+    } catch (error) {
+      log.error('删除文件夹失败:', error)
+      throw error
     }
   })
 

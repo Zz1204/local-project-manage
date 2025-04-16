@@ -6,8 +6,11 @@
     "welcome": "欢迎使用您的应用",
     "newWindow": "新窗口"
   },
-  "project": {
-    "projectList": "项目列表",
-    "createProject": "新建项目"
+  "folder": {
+    "defaultName": "未命名文件夹",
+    "folderList": "文件夹列表",
+    "createFolder": "新建文件夹",
+    "folderName": "文件夹名称",
+    "deleteFolder": "确认删除此文件夹吗？"
   }
 }

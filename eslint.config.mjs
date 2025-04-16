@@ -31,6 +31,11 @@ export default tseslint.config(
           script: {
             lang: 'ts'
           }
+        },
+        {
+          script: {
+            lang: 'tsx'
+          }
         }
       ]
     }

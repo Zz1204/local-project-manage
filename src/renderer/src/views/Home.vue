@@ -2,7 +2,7 @@
 import ThemeSwitch from '@renderer/components/theme-switch.vue'
 import LanguageSwitch from '@renderer/components/language-switch.vue'
 import Versions from '@renderer/components/versions.vue'
-import ProjectTree from '@renderer/components/project-tree.vue'
+import FolderTree from '@renderer/components/folder-tree.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ const { t } = useI18n()
         :native-scrollbar="false"
         bordered
       >
-        <project-tree />
+        <folder-tree />
       </n-layout-sider>
       <n-layout content-style="padding: 24px;" :native-scrollbar="false">
         <n-h2>平山道</n-h2>

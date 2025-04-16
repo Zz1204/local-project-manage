@@ -60,6 +60,16 @@ const api = {
         ipcRenderer.removeListener('pinia:state-changed', listener)
       }
     }
+  },
+  // 文件夹相关的 IPC 通信接口
+  folder: {
+    create: (name: string, parentId: number | null, description: string) =>
+      ipcRenderer.invoke('folder:create', name, parentId, description),
+    getAll: () => ipcRenderer.invoke('folder:getAll'),
+    getChildren: (parentId: number | null) => ipcRenderer.invoke('folder:getChildren', parentId),
+    update: (id: number, name: string, description: string) =>
+      ipcRenderer.invoke('folder:update', id, name, description),
+    delete: (id: number) => ipcRenderer.invoke('folder:delete', id)
   }
 }
 

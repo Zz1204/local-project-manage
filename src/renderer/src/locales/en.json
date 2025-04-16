@@ -6,8 +6,11 @@
     "welcome": "Welcome to Your App",
     "newWindow": "New Window"
   },
-  "project": {
-    "projectList": "Project List",
-    "createProject": "Create Project"
+  "folder": {
+    "defaultName": "Unnamed Folder",
+    "folderList": "Folder List",
+    "createFolder": "Create Folder",
+    "folderName": "Folder Name",
+    "deleteFolder": "Confirm deleting this folder?"
   }
 }
