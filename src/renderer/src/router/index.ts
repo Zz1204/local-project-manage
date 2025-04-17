@@ -9,9 +9,9 @@ const router = createRouter({
       component: () => import('../views/home.vue')
     },
     {
-      path: '/project/add',
-      name: 'project-add',
-      component: () => import('../views/project-form.vue')
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/settings.vue')
     }
   ]
 })

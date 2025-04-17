@@ -18,11 +18,12 @@ export interface PiniaSyncOptions {
 export function createPiniaSyncPlugin(options: PiniaSyncOptions = {}) {
   const { syncStores = [] } = options
 
-  // 存储取消注册函数，用于组件卸载时清理
-  let unsubscribeStateChange: (() => void) | null = null
+  // 存储每个store的取消注册函数，用于组件卸载时清理
+  const unsubscribeMap = new Map<string, () => void>()
 
   return ({ store, app }: PiniaPluginContext) => {
     // 只有在指定的syncStores中的store才会被同步
+
     if (syncStores.length === 0 || syncStores.includes(store.$id)) {
       // 是否正在处理收到的状态变更，避免循环同步
       let isApplyingExternalChanges = false
@@ -36,11 +37,10 @@ export function createPiniaSyncPlugin(options: PiniaSyncOptions = {}) {
         window.api.pinia.syncState(store.$id, JSON.parse(JSON.stringify(state)))
       })
 
-      // 仅在第一次设置监听器
-      if (!unsubscribeStateChange) {
+      // 为每个store创建独立的监听器
+      if (!unsubscribeMap.has(store.$id)) {
         // 监听来自其他窗口的状态变更
-        unsubscribeStateChange = window.api.pinia.onStateChange((data) => {
-          // 只处理当前store的状态变更
+        const unsubscribe = window.api.pinia.onStateChange((data) => {
           if (data.storeName === store.$id) {
             // 标记正在应用外部变更，避免循环同步
             isApplyingExternalChanges = true
@@ -56,6 +56,8 @@ export function createPiniaSyncPlugin(options: PiniaSyncOptions = {}) {
                   ;(state as Record<string, unknown>)[key] = changes[key]
                 })
               })
+            } catch (error) {
+              console.error('应用状态变更失败:', error)
             } finally {
               // 重置标记
               isApplyingExternalChanges = false
@@ -63,17 +65,20 @@ export function createPiniaSyncPlugin(options: PiniaSyncOptions = {}) {
           }
         })
 
-        // 组件卸载时清理
-        if (app) {
-          const originalUnmount = app.unmount
-          app.unmount = function unmount() {
-            // 清理监听器
-            if (unsubscribeStateChange) {
-              unsubscribeStateChange()
-              unsubscribeStateChange = null
-            }
-            return originalUnmount.call(this)
-          }
+        // 存储取消注册函数
+        unsubscribeMap.set(store.$id, unsubscribe)
+      }
+
+      // 组件卸载时清理
+      if (app) {
+        const originalUnmount = app.unmount
+        app.unmount = function unmount() {
+          // 清理所有监听器
+          unsubscribeMap.forEach((unsubscribe) => {
+            unsubscribe()
+          })
+          unsubscribeMap.clear()
+          return originalUnmount.call(this)
         }
       }
     }

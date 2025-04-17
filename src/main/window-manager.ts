@@ -171,6 +171,57 @@ function closeAllWindows(): void {
   })
 }
 
+/**
+ * 打开或聚焦窗口
+ * @param name 窗口名称
+ * @param options 窗口选项
+ * @returns 窗口实例
+ */
+function openOrFocusWindow(name: string, options: WindowOptions = {}): BrowserWindow {
+  // 检查窗口是否已存在
+  const existingWindow = windows.get(name)
+
+  if (existingWindow && !existingWindow.isDestroyed()) {
+    // 窗口已存在，聚焦到该窗口
+    if (existingWindow.isMinimized()) {
+      existingWindow.restore()
+    }
+    existingWindow.focus()
+    return existingWindow
+  }
+
+  // 窗口不存在，创建新窗口
+  return createWindow({ ...options, name })
+}
+
+/**
+ * 打开或聚焦特定路由的窗口
+ * @param routePath 路由路径
+ * @param name 窗口名称
+ * @param options 窗口选项
+ * @returns 窗口实例
+ */
+function openOrFocusWindowForRoute(
+  routePath: string,
+  name: string,
+  options: WindowOptions = {}
+): BrowserWindow {
+  // 检查窗口是否已存在
+  const existingWindow = windows.get(name)
+
+  if (existingWindow && !existingWindow.isDestroyed()) {
+    // 窗口已存在，聚焦到该窗口
+    if (existingWindow.isMinimized()) {
+      existingWindow.restore()
+    }
+    existingWindow.focus()
+    return existingWindow
+  }
+
+  // 窗口不存在，创建新窗口
+  return createWindowForRoute(routePath, { ...options, name })
+}
+
 export {
   createWindow,
   getWindow,
@@ -178,5 +229,7 @@ export {
   getAllWindows,
   createWindowForRoute,
   closeAllWindows,
+  openOrFocusWindow,
+  openOrFocusWindowForRoute,
   type WindowOptions
 }

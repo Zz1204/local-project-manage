@@ -6,6 +6,16 @@ import FolderTree from '@renderer/components/folder-tree.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+
+const openSetting = () => {
+  window.api.window.openOrFocusRouteInWindow('/settings', 'settings', {
+    width: 800,
+    height: 500,
+    minWidth: 800,
+    minHeight: 500,
+    title: t('common.settings')
+  })
+}
 </script>
 
 <template>
@@ -15,6 +25,9 @@ const { t } = useI18n()
       <div class="flex items-center gap-2">
         <theme-switch />
         <language-switch />
+        <div class="flex items-center gap-2 cursor-pointer" @click="openSetting">
+          <div class="text-28px uno-icon:material-symbols:settings-outline"></div>
+        </div>
       </div>
     </n-layout-header>
     <n-layout position="absolute" class="top-48px! bottom-22px!" has-sider>

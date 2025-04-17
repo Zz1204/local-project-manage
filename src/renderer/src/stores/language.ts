@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import i18n from '../i18n'
 
 export const useLanguageStore = defineStore('language', () => {
@@ -8,11 +8,9 @@ export const useLanguageStore = defineStore('language', () => {
   // 从数据库加载语言设置
   async function loadLanguage(): Promise<void> {
     try {
-      const langValue = await window.api.settings.get('language')
-      console.log(langValue)
-
-      if (langValue) {
-        language.value = langValue
+      const langValueSettings = await window.api.settings.get('language')
+      if (langValueSettings) {
+        language.value = langValueSettings
       }
     } catch (error) {
       console.error('加载语言设置失败:', error)
@@ -20,6 +18,14 @@ export const useLanguageStore = defineStore('language', () => {
       language.value = 'zh'
     }
   }
+
+  watch(
+    () => language.value,
+    (newVal) => {
+      // 更新 i18n locale
+      i18n.global.locale.value = newVal as 'zh' | 'en'
+    }
+  )
 
   // 设置语言
   async function setLanguage(lang: string): Promise<void> {
@@ -30,7 +36,7 @@ export const useLanguageStore = defineStore('language', () => {
       console.error('保存语言设置失败:', error)
     }
     // 更新 i18n locale
-    i18n.global.locale.value = lang as 'zh' | 'en'
+    // i18n.global.locale.value = lang as 'zh' | 'en'
   }
 
   // 初始化语言

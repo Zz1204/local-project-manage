@@ -17,6 +17,14 @@ const api = {
     openRouteInNewWindow: (route: string, options?: Electron.BrowserWindowConstructorOptions) => {
       return ipcRenderer.invoke('window:open-route', route, options)
     },
+    // 打开或聚焦窗口并加载指定路由
+    openOrFocusRouteInWindow: (
+      route: string,
+      name: string,
+      options?: Electron.BrowserWindowConstructorOptions
+    ) => {
+      return ipcRenderer.invoke('window:open-or-focus-route', route, name, options)
+    },
     // 关闭指定窗口
     closeWindow: (name: string) => {
       return ipcRenderer.invoke('window:close', name)

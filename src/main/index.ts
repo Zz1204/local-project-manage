@@ -7,6 +7,8 @@ import {
   closeWindow,
   closeAllWindows,
   getAllWindows,
+  openOrFocusWindow,
+  openOrFocusWindowForRoute,
   type WindowOptions
 } from './window-manager'
 import { folderOperations, settingsOperations } from './database'
@@ -112,6 +114,35 @@ app.whenReady().then(() => {
       return true
     } catch (error) {
       log.error('打开窗口失败:', error)
+      return false
+    }
+  })
+
+  // 打开或聚焦窗口并加载指定路由
+  ipcMain.handle('window:open-or-focus-route', (_, route: string, name: string, options = {}) => {
+    try {
+      // 记录传入的窗口选项，帮助调试
+      log.info('打开或聚焦窗口:', route, name)
+      log.info('窗口选项:', JSON.stringify(options, null, 2))
+
+      // 确保options的类型与WindowOptions兼容
+      const windowOptions = options as WindowOptions
+      openOrFocusWindowForRoute(route, name, windowOptions)
+      return true
+    } catch (error) {
+      log.error('打开或聚焦窗口失败:', error)
+      return false
+    }
+  })
+
+  // 打开或聚焦窗口
+  ipcMain.handle('window:open-or-focus', (_, name: string, options = {}) => {
+    try {
+      const windowOptions = options as WindowOptions
+      openOrFocusWindow(name, windowOptions)
+      return true
+    } catch (error) {
+      log.error('打开或聚焦窗口失败:', error)
       return false
     }
   })

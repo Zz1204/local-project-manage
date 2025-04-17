@@ -4,7 +4,8 @@
     "darkMode": "深色模式",
     "lightMode": "浅色模式",
     "welcome": "欢迎使用您的应用",
-    "newWindow": "新窗口"
+    "newWindow": "新窗口",
+    "settings": "设置"
   },
   "folder": {
     "defaultName": "未命名文件夹",
@@ -12,5 +13,9 @@
     "createFolder": "新建文件夹",
     "folderName": "文件夹名称",
     "deleteFolder": "确认删除此文件夹吗？"
+  },
+  "settings": {
+    "common": "通用",
+    "idea": "IDE管理"
   }
 }

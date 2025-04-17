@@ -17,6 +17,15 @@ declare global {
         minimize: () => void
         toggleMaximize: () => void
         close: () => void
+        openOrFocusRouteInWindow: (
+          route: string,
+          name: string,
+          options?: Electron.BrowserWindowConstructorOptions
+        ) => Promise<boolean>
+        openOrFocusWindow: (
+          name: string,
+          options?: Electron.BrowserWindowConstructorOptions
+        ) => Promise<boolean>
       }
       pinia: {
         syncState: (storeName: string, stateChange: Record<string, unknown>) => void
