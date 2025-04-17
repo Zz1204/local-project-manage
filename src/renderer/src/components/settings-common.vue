@@ -29,11 +29,19 @@ const setThemeStore = (value: 'light' | 'dark') => {
 <template>
   <n-card>
     <n-form>
-      <n-form-item :label="t('settings.language')" path="language">
+      <n-form-item
+        :label-style="{ fontSize: '16px', fontWeight: 'bold' }"
+        :label="t('settings.language')"
+        path="language"
+      >
         <n-select v-model:value="language" :options="languageOptions"></n-select>
       </n-form-item>
 
-      <n-form-item :label="t('settings.theme')" path="theme">
+      <n-form-item
+        :label-style="{ fontSize: '16px', fontWeight: 'bold' }"
+        :label="t('settings.theme')"
+        path="theme"
+      >
         <n-select v-model:value="theme" :options="themeOptions" @update:value="setThemeStore" />
       </n-form-item>
     </n-form>

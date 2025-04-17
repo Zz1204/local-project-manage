@@ -21,9 +21,10 @@ export const useLanguageStore = defineStore('language', () => {
 
   watch(
     () => language.value,
-    (newVal) => {
+    async (newVal) => {
       // 更新 i18n locale
       i18n.global.locale.value = newVal as 'zh' | 'en'
+      await window.api.settings.set('language', newVal)
     }
   )
 
