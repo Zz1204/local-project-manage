@@ -1,49 +1,71 @@
 import { darkTheme, lightTheme } from 'naive-ui'
 import { defineStore } from 'pinia'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 export const useThemeStore = defineStore('theme', () => {
-  const isDark = ref(false)
+  const theme = ref<'light' | 'dark'>('light')
 
   // 从数据库加载主题设置
   async function loadTheme(): Promise<void> {
     try {
       const themeValue = await window.api.settings.get('theme')
-      isDark.value = themeValue === 'dark'
+      theme.value = themeValue === 'dark' ? 'dark' : 'light'
     } catch (error) {
       console.error('加载主题设置失败:', error)
       // 如果数据库中没有设置，则使用默认值
-      isDark.value = false
+      theme.value = 'light'
     }
   }
 
   // 切换主题
   async function toggleTheme(): Promise<void> {
-    isDark.value = !isDark.value
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
     try {
-      await window.api.settings.set('theme', isDark.value ? 'dark' : 'light')
+      await window.api.settings.set('theme', theme.value)
     } catch (error) {
       console.error('保存主题设置失败:', error)
     }
     // 更新 HTML 的 class
-    document.documentElement.classList.toggle('dark', isDark.value)
-    setTheme(isDark.value)
+    document.documentElement.classList.toggle('dark', theme.value === 'dark')
+    // setTheme(theme.value)
     // 同步更新原生窗口暗黑模式
-    window.api.setNativeTheme(isDark.value)
+    window.api.setNativeTheme(theme.value === 'dark')
+  }
+
+  // 设置主题
+  async function setThemeMode(mode: 'light' | 'dark'): Promise<void> {
+    theme.value = mode
+    try {
+      await window.api.settings.set('theme', theme.value)
+    } catch (error) {
+      console.error('保存主题设置失败:', error)
+    }
+    // 更新 HTML 的 class
+    document.documentElement.classList.toggle('dark', theme.value === 'dark')
+    // setTheme(theme.value)
+    // 同步更新原生窗口暗黑模式
+    window.api.setNativeTheme(theme.value === 'dark')
   }
 
   // 初始化主题
   async function initTheme(): Promise<void> {
     await loadTheme()
-    document.documentElement.classList.toggle('dark', isDark.value)
-    setTheme(isDark.value)
+    document.documentElement.classList.toggle('dark', theme.value === 'dark')
+    setTheme(theme.value)
     // 初始化时同步原生窗口暗黑模式
-    window.api.setNativeTheme(isDark.value)
+    window.api.setNativeTheme(theme.value === 'dark')
   }
 
-  function setTheme(dark: boolean): void {
+  watch(
+    () => theme.value,
+    (newTheme) => {
+      setTheme(newTheme)
+    }
+  )
+
+  function setTheme(mode: 'light' | 'dark'): void {
     // 将主题变量添加到body的CSS变量中
-    const cssVars = dark ? darkTheme.common : lightTheme.common
+    const cssVars = mode === 'dark' ? darkTheme.common : lightTheme.common
 
     for (const key in cssVars) {
       document.body.style.setProperty(`--n-${key}`, cssVars[key])
@@ -56,8 +78,9 @@ export const useThemeStore = defineStore('theme', () => {
   })
 
   return {
-    isDark,
+    theme,
     toggleTheme,
+    setThemeMode,
     initTheme
   }
 })

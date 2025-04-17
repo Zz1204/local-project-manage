@@ -16,6 +16,10 @@
   },
   "settings": {
     "common": "Common",
-    "idea": "IDE Management"
+    "idea": "IDE Management",
+    "zh": "Simplified Chinese",
+    "en": "English",
+    "language": "Language",
+    "theme": "Theme"
   }
 }
