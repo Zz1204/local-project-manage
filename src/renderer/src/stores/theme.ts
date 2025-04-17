@@ -27,7 +27,6 @@ export const useThemeStore = defineStore('theme', () => {
     }
     // 更新 HTML 的 class
     document.documentElement.classList.toggle('dark', theme.value === 'dark')
-    // setTheme(theme.value)
     // 同步更新原生窗口暗黑模式
     window.api.setNativeTheme(theme.value === 'dark')
   }
@@ -42,7 +41,6 @@ export const useThemeStore = defineStore('theme', () => {
     }
     // 更新 HTML 的 class
     document.documentElement.classList.toggle('dark', theme.value === 'dark')
-    // setTheme(theme.value)
     // 同步更新原生窗口暗黑模式
     window.api.setNativeTheme(theme.value === 'dark')
   }
