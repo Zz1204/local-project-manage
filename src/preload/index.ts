@@ -103,7 +103,8 @@ const api = {
   },
   project: {
     create: (project) => ipcRenderer.invoke('project:create', project),
-    getAll: (page, pageSize) => ipcRenderer.invoke('project:getAll', page, pageSize),
+    getAll: (page, pageSize, folderId) =>
+      ipcRenderer.invoke('project:getAll', page, pageSize, folderId),
     update: (id, project) => ipcRenderer.invoke('project:update', id, project),
     delete: (id) => ipcRenderer.invoke('project:delete', id)
   },

@@ -5,8 +5,10 @@ import { useEditorStore } from '@renderer/stores/editor'
 import { useFolderStore } from '@renderer/stores/folder'
 import type { Project } from '@renderer/types/project'
 import type { FormInst } from 'naive-ui'
-import type { Folder } from '@renderer/types/folder'
+import type { Folder, FolderTreeItem } from '@renderer/types/folder'
+import type { TreeOption } from 'naive-ui'
 import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 
 declare global {
   interface Window {
@@ -23,15 +25,27 @@ const projectStore = useProjectStore()
 const editorStore = useEditorStore()
 const folderStore = useFolderStore()
 const message = useMessage()
+const { t } = useI18n()
 
 // 加载数据
 onMounted(async () => {
   await Promise.all([
     projectStore.loadProjects(),
-    editorStore.fetchEditors(),
-    folderStore.loadFolders()
+    editorStore.fetchEditors()
+    // folderStore.loadFolders()
   ])
 })
+
+// 监听选中的文件夹变化
+watch(
+  () => folderStore.selectedFolderId,
+  (newFolderId) => {
+    // 重置分页
+    pageInfo.value.currentPage = 1
+    // 重新加载项目
+    projectStore.loadProjects()
+  }
+)
 
 // 分页信息
 const pageInfo = ref({
@@ -52,16 +66,16 @@ watch(
 
 // 获取编辑器名称
 function getEditorName(editorId: number | null): string {
-  if (!editorId) return '未设置'
+  if (!editorId) return t('project.notSet')
   const editor = editorStore.editors.find((e) => e.id === editorId)
-  return editor?.displayName || '未知编辑器'
+  return editor?.displayName || t('project.unknown')
 }
 
 // 获取文件夹名称
 function getFolderName(folderId: number | null): string {
-  if (!folderId) return '未设置'
+  if (!folderId) return t('project.notSet')
   const folder = folderStore.folders.find((f) => f.id === folderId)
-  return folder?.name || '未知文件夹'
+  return folder?.name || t('project.unknown')
 }
 
 // 表单相关
@@ -97,32 +111,33 @@ const formModel = reactive<{
 const rules = {
   name: {
     required: true,
-    message: '请输入项目名称',
+    message: t('project.enterProjectName'),
     trigger: ['blur', 'input']
   },
   path: {
     required: true,
-    message: '请输入项目路径',
+    message: t('project.enterProjectPath'),
     trigger: ['blur', 'input']
   },
   description: {
     required: false,
-    message: '请输入项目描述',
+    message: t('project.enterProjectDescription'),
     trigger: ['blur', 'input']
   },
   folderId: {
-    required: false,
-    message: '请选择文件夹',
+    type: 'number',
+    required: true,
+    message: t('project.selectFolder'),
     trigger: ['blur', 'change']
   },
   versionControlTool: {
     required: true,
-    message: '请选择版本控制工具',
+    message: t('project.selectVersionControl'),
     trigger: ['blur', 'change']
   },
   branch: {
     required: true,
-    message: '请输入分支名称',
+    message: t('project.enterBranchName'),
     trigger: ['blur', 'input']
   }
 }
@@ -137,7 +152,7 @@ const versionControlOptions = [
 
 // 计算属性：模态框标题
 const modalTitle = computed(() => {
-  return projectStore.editingProject ? '编辑项目' : '新增项目'
+  return projectStore.editingProject ? t('project.edit') : t('project.create')
 })
 
 // 打开表单模态框
@@ -171,12 +186,12 @@ function openFormModal(projectId: number | null = null) {
       console.log('表单路径:', formModel.path)
     }
   } else {
-    // 新增模式：重置表单
+    // 新增模式：重置表单，并设置当前选中的文件夹ID
     Object.assign(formModel, {
       name: '',
       description: '',
       editorId: null,
-      folderId: null,
+      folderId: folderStore.selectedFolderId,
       folderPath: null,
       versionControlTool: 'git',
       branch: 'master',
@@ -313,6 +328,29 @@ const openProjectInEditor = (project: Project) => {
 const editors = computed(() => {
   return editorStore.editors
 })
+
+// 获取选中文件夹的路径
+const selectedFolderPath = computed(() => {
+  if (!folderStore.selectedFolderId) return []
+
+  // 递归查找文件夹路径
+  function findPath(folders: TreeOption[], targetId: number): TreeOption[] {
+    for (const folder of folders) {
+      if (folder.key === targetId) {
+        return [folder]
+      }
+      if (folder.children && folder.children.length > 0) {
+        const path = findPath(folder.children, targetId)
+        if (path.length > 0) {
+          return [folder, ...path]
+        }
+      }
+    }
+    return []
+  }
+
+  return findPath(folderStore.folderTree, folderStore.selectedFolderId)
+})
 </script>
 
 <template>
@@ -320,12 +358,16 @@ const editors = computed(() => {
     <div
       class="h-48px px-16px flex items-center justify-between b-b-1px b-b-solid b-b-dividerColor"
     >
-      <div>
+      <div class="flex items-center">
         <n-breadcrumb separator=">">
-          <n-breadcrumb-item v-for="folder in folderStore.folderTree" :key="folder.id">
+          <n-breadcrumb-item v-for="folder in selectedFolderPath" :key="folder.id">
             {{ folder.name }}
           </n-breadcrumb-item>
         </n-breadcrumb>
+        <div class="text-12px text-gray-500" v-if="projectStore.pagination.total > 0">
+          （<span class="text-12px">{{ projectStore.pagination.total }}</span
+          >）
+        </div>
       </div>
       <div>
         <n-button type="primary" size="tiny" @click="openFormModal()">
@@ -353,11 +395,11 @@ const editors = computed(() => {
                   trigger="hover"
                   :options="[
                     {
-                      label: '编辑',
+                      label: t('common.edit'),
                       key: 'edit'
                     },
                     {
-                      label: '删除',
+                      label: t('common.delete'),
                       key: 'delete'
                     }
                   ]"
@@ -384,14 +426,7 @@ const editors = computed(() => {
                   </n-tag>
                 </n-space>
                 <n-text depth="3" @click="openProjectPath(project.path)">
-                  项目路径：{{ project.path || '未设置' }}
-                </n-text>
-                <n-text depth="3">
-                  最后打开时间：{{
-                    project.lastOpenTime
-                      ? new Date(project.lastOpenTime).toLocaleString()
-                      : '从未打开'
-                  }}
+                  {{ t('project.path') }}：{{ project.path || t('project.notSet') }}
                 </n-text>
               </n-space>
             </n-card>
@@ -404,11 +439,14 @@ const editors = computed(() => {
         </div>
       </template>
     </div>
-    <div class="h-48px px-16px flex items-center justify-end b-t-1px b-t-solid b-t-dividerColor">
+    <div
+      v-if="projectStore.pagination.totalPages > 1"
+      class="h-48px px-16px flex items-center justify-end b-t-1px b-t-solid b-t-dividerColor"
+    >
       <n-pagination
         v-model:page="pageInfo.currentPage"
         v-model:page-size="pageInfo.pageSize"
-        :page-count="projectStore.pagination.total"
+        :page-count="projectStore.pagination.totalPages"
         :page-sizes="pageInfo.pageSizes"
         size="small"
         show-quick-jumper
@@ -426,12 +464,20 @@ const editors = computed(() => {
         label-width="120"
         require-mark-placement="right-hanging"
       >
-        <n-form-item label="项目名称" path="name">
-          <n-input v-model:value="formModel.name" placeholder="请输入项目名称" />
+        <n-form-item :label="t('project.name')" path="name">
+          <n-input v-model:value="formModel.name" :placeholder="t('project.enterProjectName')" />
         </n-form-item>
-        <n-form-item label="项目路径" path="path">
+        <n-form-item :label="t('project.folder')" path="folderId">
+          <n-tree-select
+            v-model:value="formModel.folderId"
+            :options="folderStore.folderTree"
+            :placeholder="t('project.selectFolder')"
+            default-expand-all
+          />
+        </n-form-item>
+        <n-form-item :label="t('project.path')" path="path">
           <n-input-group>
-            <n-input v-model:value="formModel.path" placeholder="请输入项目路径" />
+            <n-input v-model:value="formModel.path" :placeholder="t('project.enterProjectPath')" />
             <n-button @click="selectFolder">
               <template #icon>
                 <div class="text-20px uno-icon:material-symbols:folder-open"></div>
@@ -439,7 +485,7 @@ const editors = computed(() => {
             </n-button>
           </n-input-group>
         </n-form-item>
-        <n-form-item label="编辑器" path="editorId">
+        <n-form-item :label="t('project.editor')" path="editorId">
           <n-select
             v-model:value="formModel.editorId"
             :options="
@@ -448,50 +494,22 @@ const editors = computed(() => {
                 value: editor.id
               }))
             "
-            placeholder="请选择编辑器"
+            :placeholder="t('project.selectEditor')"
             clearable
           />
         </n-form-item>
-        <n-form-item label="项目描述" path="description">
+        <n-form-item :label="t('project.description')" path="description">
           <n-input
             v-model:value="formModel.description"
             type="textarea"
-            placeholder="请输入项目描述"
+            :placeholder="t('project.enterProjectDescription')"
           />
         </n-form-item>
-
-        <!-- <n-form-item label="文件夹" path="folderId">
-          <n-select
-            v-model:value="formModel.folderId"
-            :options="
-              folderStore.folders.map((folder) => ({
-                label: folder.name,
-                value: folder.id
-              }))
-            "
-            placeholder="请选择文件夹"
-            clearable
-            @update:value="handleFolderSelect"
-          />
-        </n-form-item>
-        <n-form-item label="版本控制工具" path="versionControlTool">
-          <n-select
-            v-model:value="formModel.versionControlTool"
-            :options="versionControlOptions"
-            placeholder="请选择版本控制工具"
-          />
-        </n-form-item>
-        <n-form-item label="分支名称" path="branch">
-          <n-input v-model:value="formModel.branch" placeholder="请输入分支名称" />
-        </n-form-item> -->
-        <!-- <n-form-item label="收藏状态" path="isFavorite">
-          <n-switch v-model:value="formModel.isFavorite" />
-        </n-form-item> -->
       </n-form>
       <template #footer>
         <div class="flex justify-end gap-12px">
-          <n-button @click="closeFormModal">取消</n-button>
-          <n-button type="primary" @click="submitForm">确定</n-button>
+          <n-button @click="closeFormModal">{{ t('common.cancel') }}</n-button>
+          <n-button type="primary" @click="submitForm">{{ t('common.confirm') }}</n-button>
         </div>
       </template>
     </n-modal>

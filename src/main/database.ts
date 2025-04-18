@@ -351,11 +351,37 @@ const projectOperations = {
   },
 
   // 获取所有项目（分页）
-  getAllProjects: (page: number, pageSize: number) => {
+  getAllProjects: (page: number, pageSize: number, folderId: number | null) => {
     const offset = (page - 1) * pageSize
-    console.log('获取所有项目', { page, pageSize, offset })
-    const countStmt = db.prepare('SELECT COUNT(*) as total FROM projects')
+    log.info('获取所有项目', { page, pageSize, folderId })
+    // 构建递归查询子文件夹的 CTE
+    const folderQuery =
+      folderId !== null
+        ? `
+      WITH RECURSIVE subfolders(id) AS (
+        -- 基础查询：选择当前文件夹
+        SELECT id FROM folders WHERE id = ?
+        UNION ALL
+        -- 递归查询：选择所有子文件夹
+        SELECT f.id FROM folders f
+        INNER JOIN subfolders s ON f.parent_id = s.id
+      )
+    `
+        : ''
+
+    // 构建项目查询条件
+    const whereClause = folderId !== null ? 'WHERE folder_id IN (SELECT id FROM subfolders)' : ''
+
+    // 构建完整的 SQL 查询
+    const countStmt = db.prepare(`
+      ${folderQuery}
+      SELECT COUNT(*) as total
+      FROM projects
+      ${whereClause}
+    `)
+
     const stmt = db.prepare(`
+      ${folderQuery}
       SELECT
         id,
         name,
@@ -370,13 +396,18 @@ const projectOperations = {
         created_at as createdAt,
         updated_at as updatedAt
       FROM projects
+      ${whereClause}
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
     `)
 
-    const total = countStmt.get().total
-    const projects = stmt.all(pageSize, offset)
-    return { projects, total }
+    // 执行查询
+    const total = folderId !== null ? countStmt.get(folderId).total : countStmt.get().total
+    const totalPages = Math.ceil(total / pageSize)
+    const projects =
+      folderId !== null ? stmt.all(folderId, pageSize, offset) : stmt.all(pageSize, offset)
+
+    return { projects, total, totalPages }
   },
 
   // 更新项目

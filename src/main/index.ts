@@ -387,9 +387,10 @@ app.whenReady().then(() => {
     }
   })
 
-  ipcMain.handle('project:getAll', async (_, page, pageSize) => {
+  ipcMain.handle('project:getAll', async (_, page, pageSize, folderId) => {
     try {
-      return projectOperations.getAllProjects(page, pageSize)
+      log.info('获取项目列表', { page, pageSize, folderId })
+      return projectOperations.getAllProjects(page, pageSize, folderId)
     } catch (error) {
       log.error('获取项目列表失败:', error)
       throw error
@@ -456,17 +457,6 @@ app.whenReady().then(() => {
             log.error('打开项目失败:', error)
           }
         })
-
-        // 更新项目的最后打开时间
-        try {
-          // 使用 projectOperations 更新
-          const result = await projectOperations.updateProject(projectId, {
-            lastOpenTime: Date.now()
-          })
-          log.info('更新项目最后打开时间:', { projectPath, result })
-        } catch (dbError) {
-          log.error('更新项目最后打开时间失败:', dbError)
-        }
 
         return { success: true }
       } catch (error) {

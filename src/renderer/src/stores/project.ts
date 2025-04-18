@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Project, ProjectOperationResult } from '../types/project'
+import { useFolderStore } from './folder'
 
 export const useProjectStore = defineStore('project', () => {
+  const folderStore = useFolderStore()
+
   // 状态
   const projects = ref<Project[]>([])
   const selectedProjectId = ref<number | null>(null)
@@ -12,7 +15,8 @@ export const useProjectStore = defineStore('project', () => {
   const pagination = ref({
     currentPage: 1,
     pageSize: 10,
-    total: 0
+    total: 0,
+    totalPages: 0
   })
 
   // 计算属性
@@ -36,11 +40,13 @@ export const useProjectStore = defineStore('project', () => {
     try {
       const result = await window.api.project.getAll(
         pagination.value.currentPage,
-        pagination.value.pageSize
+        pagination.value.pageSize,
+        folderStore.selectedFolderId
       )
       console.log('加载的项目数据:', result.projects)
       projects.value = result.projects
       pagination.value.total = result.total
+      pagination.value.totalPages = result.totalPages
     } catch (err) {
       console.error('加载项目失败:', err)
       error.value = '加载项目失败'
@@ -55,7 +61,10 @@ export const useProjectStore = defineStore('project', () => {
     isLoading.value = true
     error.value = null
     try {
-      const result = await window.api.project.create(project)
+      const result = await window.api.project.create({
+        ...project,
+        folderId: folderStore.selectedFolderId
+      })
       if (result.success) {
         await loadProjects()
       }

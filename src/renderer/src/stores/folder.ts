@@ -20,7 +20,8 @@ export const useFolderStore = defineStore('folder', () => {
           ...folder,
           key: folder.id,
           label: folder.name,
-          children: buildTree(folder.id)
+          children: buildTree(folder.id),
+          isLeaf: buildTree(folder.id).length === 0
         }))
     }
     return buildTree(null)
@@ -44,6 +45,11 @@ export const useFolderStore = defineStore('folder', () => {
     error.value = null
     try {
       folders.value = await window.api.folder.getAll()
+      if (folders.value.length === 0) {
+        selectedFolderId.value = null
+      } else {
+        selectedFolderId.value = folders.value[0].id
+      }
     } catch (err) {
       console.error('加载文件夹失败:', err)
       error.value = '加载文件夹失败'
@@ -115,7 +121,10 @@ export const useFolderStore = defineStore('folder', () => {
   }
 
   function setSelectedFolder(id: number | null): void {
+    console.log('Setting selected folder:', id)
+    console.log('Current selectedFolderId:', selectedFolderId.value)
     selectedFolderId.value = id
+    console.log('New selectedFolderId:', selectedFolderId.value)
   }
 
   function setEditingFolder(id: number | null): void {

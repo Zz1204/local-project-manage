@@ -41,7 +41,9 @@ onMounted(async () => {
 
 // 处理选择
 function handleSelect(keys: string[]): void {
-  selectedKeys.value = keys
+  if (keys.length === 0) return
+  console.log('Folder selected:', keys)
+  // selectedKeys.value = keys
   if (keys.length > 0) {
     folderStore.setSelectedFolder(parseInt(keys[0]))
   } else {
@@ -152,7 +154,7 @@ function renderSwitcherIconWithExpaned({ expanded }: { expanded: boolean }) {
               virtual-scroll
               :default-expand-all="true"
               :data="treeData"
-              :selected-keys="selectedKeys"
+              :selected-keys="folderStore.selectedFolderId ? [folderStore.selectedFolderId] : []"
               :expanded-keys="expandKeys"
               :on-update:expanded-keys="handleExpandKeys"
               :render-label="renderTreeLabel"

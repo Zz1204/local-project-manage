@@ -9,11 +9,28 @@ export const useThemeStore = defineStore('theme', () => {
   async function loadTheme(): Promise<void> {
     try {
       const themeValue = await window.api.settings.get('theme')
-      theme.value = themeValue === 'dark' ? 'dark' : 'light'
+      if (themeValue) {
+        theme.value = themeValue === 'dark' ? 'dark' : 'light'
+      } else {
+        // 如果数据库中没有设置，则使用系统主题
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        theme.value = systemTheme
+        // 保存系统主题到数据库
+        try {
+          await window.api.settings.set('theme', theme.value)
+        } catch (error) {
+          console.error('保存系统主题设置失败:', error)
+        }
+      }
     } catch (error) {
       console.error('加载主题设置失败:', error)
-      // 如果数据库中没有设置，则使用默认值
-      theme.value = 'light'
+      // 如果加载失败，使用系统主题
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light'
+      theme.value = systemTheme
     }
   }
 

@@ -74,7 +74,11 @@ declare global {
         create: (
           project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
         ) => Promise<ProjectOperationResult>
-        getAll: (page: number, pageSize: number) => Promise<{ projects: Project[]; total: number }>
+        getAll: (
+          page: number,
+          pageSize: number,
+          folderId: number | null
+        ) => Promise<{ projects: Project[]; total: number; totalPages: number }>
         update: (id: number, project: Partial<Project>) => Promise<ProjectOperationResult>
         delete: (id: number) => Promise<ProjectOperationResult>
       }
