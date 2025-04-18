@@ -83,6 +83,27 @@ const api = {
   settings: {
     get: (key: string) => ipcRenderer.invoke('settings:get', key),
     set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value)
+  },
+  // 编辑器相关的 IPC 通信接口
+  editor: {
+    create: (
+      displayName: string,
+      executablePath: string,
+      commandArgs: string,
+      isDefault: boolean
+    ) => ipcRenderer.invoke('editor:create', displayName, executablePath, commandArgs, isDefault),
+    getAll: () => ipcRenderer.invoke('editor:getAll'),
+    update: (
+      id: number,
+      displayName: string,
+      executablePath: string,
+      commandArgs: string,
+      isDefault: boolean
+    ) =>
+      ipcRenderer.invoke('editor:update', id, displayName, executablePath, commandArgs, isDefault),
+    delete: (id: number) => ipcRenderer.invoke('editor:delete', id),
+    setDefault: (id: number) => ipcRenderer.invoke('editor:setDefault', id),
+    scan: () => ipcRenderer.invoke('editor:scan')
   }
 }
 

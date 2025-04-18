@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, dialog } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { exec } from 'child_process'
 import {
@@ -11,7 +11,8 @@ import {
   openOrFocusWindowForRoute,
   type WindowOptions
 } from './window-manager'
-import { folderOperations, settingsOperations } from './database'
+import { folderOperations, settingsOperations, editorOperations } from './database'
+import { scanEditorsService } from './editor-service'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -38,9 +39,9 @@ function createMainWindow(): void {
   // 使用窗口管理器创建主窗口
   const mainWindow = createWindow({
     name: 'main', // 设置窗口名称为main
-    width: 900,
+    width: 1000,
     height: 670,
-    minWidth: 900,
+    minWidth: 1000,
     minHeight: 670,
     webPreferences: {
       sandbox: false
@@ -79,6 +80,16 @@ app.whenReady().then(() => {
   // 处理获取系统语言
   ipcMain.handle('get-system-language', () => {
     return app.getLocale()
+  })
+
+  // 处理文件选择对话框
+  ipcMain.handle('dialog:showOpenDialog', async (_, options) => {
+    try {
+      return await dialog.showOpenDialog(options)
+    } catch (error) {
+      log.error('显示文件选择对话框失败:', error)
+      throw error
+    }
   })
 
   // 设置相关的 IPC 处理
@@ -247,6 +258,109 @@ app.whenReady().then(() => {
       return folderOperations.deleteFolder(id)
     } catch (error) {
       log.error('删除文件夹失败:', error)
+      throw error
+    }
+  })
+
+  // 编辑器相关的 IPC 处理
+  ipcMain.handle(
+    'editor:create',
+    (_, displayName: string, executablePath: string, commandArgs: string, isDefault: boolean) => {
+      try {
+        return editorOperations.createEditor(displayName, executablePath, commandArgs, isDefault)
+      } catch (error) {
+        log.error('创建编辑器失败:', error)
+        throw error
+      }
+    }
+  )
+
+  ipcMain.handle('editor:getAll', () => {
+    try {
+      return editorOperations.getAllEditors()
+    } catch (error) {
+      log.error('获取编辑器列表失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle(
+    'editor:update',
+    (
+      _,
+      id: number,
+      displayName: string,
+      executablePath: string,
+      commandArgs: string,
+      isDefault: boolean
+    ) => {
+      try {
+        return editorOperations.updateEditor(
+          id,
+          displayName,
+          executablePath,
+          commandArgs,
+          isDefault
+        )
+      } catch (error) {
+        log.error('更新编辑器失败:', error)
+        throw error
+      }
+    }
+  )
+
+  ipcMain.handle('editor:delete', (_, id: number) => {
+    try {
+      return editorOperations.deleteEditor(id)
+    } catch (error) {
+      log.error('删除编辑器失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('editor:setDefault', (_, id: number) => {
+    try {
+      return editorOperations.setDefaultEditor(id)
+    } catch (error) {
+      log.error('设置默认编辑器失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('editor:scan', async () => {
+    try {
+      const result = await scanEditorsService()
+      // 扫描到编辑器后将他们存入数据库
+      if (result.success && result.editors.length > 0) {
+        for (const editor of result.editors) {
+          try {
+            // 检查编辑器是否已存在
+            const existingEditor = editorOperations
+              .getAllEditors()
+              .find((e: any) => e.displayName === editor.displayName)
+
+            if (!existingEditor) {
+              // 如果不存在，则创建新的编辑器记录
+              editorOperations.createEditor(
+                editor.displayName,
+                editor.executablePath,
+                editor.commandArgs,
+                editor.isDefault
+              )
+              log.info(`添加新编辑器: ${editor.displayName}`)
+            } else {
+              log.info(`编辑器已存在: ${editor.displayName}，跳过添加`)
+            }
+          } catch (err) {
+            log.error(`保存编辑器 ${editor.displayName} 失败:`, err)
+          }
+        }
+      } else {
+        log.info('未扫描到编辑器或扫描失败')
+      }
+      return result
+    } catch (error) {
+      log.error('扫描本地编辑器失败:', error)
       throw error
     }
   })

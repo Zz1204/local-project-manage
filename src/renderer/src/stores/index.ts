@@ -13,3 +13,5 @@ pinia.use(
 )
 
 export default pinia
+
+export { useEditorStore } from './editor'

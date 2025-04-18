@@ -28,9 +28,11 @@ const naiveDateLocale = computed(() => {
   >
     <n-notification-provider>
       <n-dialog-provider>
-        <n-message-provider>
-          <slot />
-        </n-message-provider>
+        <n-modal-provider>
+          <n-message-provider>
+            <slot />
+          </n-message-provider>
+        </n-modal-provider>
       </n-dialog-provider>
     </n-notification-provider>
     <n-global-style />

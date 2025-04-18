@@ -9,9 +9,9 @@ const { t } = useI18n()
 
 const openSetting = () => {
   window.api.window.openOrFocusRouteInWindow('/settings', 'settings', {
-    width: 800,
+    width: 900,
     height: 500,
-    minWidth: 800,
+    minWidth: 900,
     minHeight: 500,
     title: t('common.settings')
   })

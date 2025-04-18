@@ -1,5 +1,6 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import { Folder, FolderOperationResult } from '../renderer/src/types/folder'
+import { Editor, EditorOperationResult } from '../renderer/src/types/editor'
 
 declare global {
   interface Window {
@@ -47,6 +48,25 @@ declare global {
       settings: {
         get: (key: string) => Promise<string | null>
         set: (key: string, value: string) => Promise<any>
+      }
+      editor: {
+        create: (
+          displayName: string,
+          executablePath: string,
+          commandArgs: string,
+          isDefault: boolean
+        ) => Promise<EditorOperationResult>
+        getAll: () => Promise<Editor[]>
+        update: (
+          id: number,
+          displayName: string,
+          executablePath: string,
+          commandArgs: string,
+          isDefault: boolean
+        ) => Promise<EditorOperationResult>
+        delete: (id: number) => Promise<EditorOperationResult>
+        setDefault: (id: number) => Promise<EditorOperationResult>
+        scan: () => Promise<{ success: boolean; editors: Editor[] }>
       }
     }
   }

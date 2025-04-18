@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import SettingsCommon from '@renderer/components/settings-common.vue'
-import SettingsIdea from '@renderer/components/settings-idea.vue'
+import SettingsEditor from '@renderer/components/settings-editor.vue'
 const { t } = useI18n()
 </script>
 
@@ -15,7 +15,7 @@ const { t } = useI18n()
       </n-tab-pane>
       <n-tab-pane name="idea" :tab="t('settings.idea')">
         <div class="p-r-12px py-12px">
-          <SettingsIdea />
+          <SettingsEditor />
         </div>
       </n-tab-pane>
     </n-tabs>

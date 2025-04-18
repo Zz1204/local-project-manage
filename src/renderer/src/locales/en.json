@@ -5,7 +5,19 @@
     "lightMode": "Light Mode",
     "welcome": "Welcome to Your App",
     "newWindow": "New Window",
-    "settings": "Settings"
+    "settings": "Settings",
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "success": "Success",
+    "failed": "Failed",
+    "loading": "Loading",
+    "scan": "Scan",
+    "selectFile": "Select File",
+    "actions": "Operate"
   },
   "folder": {
     "defaultName": "Unnamed Folder",
@@ -20,6 +32,31 @@
     "zh": "Simplified Chinese",
     "en": "English",
     "language": "Language",
-    "theme": "Theme"
+    "theme": "Theme",
+    "editor": {
+      "title": "Editor Management",
+      "createEditor": "Create Editor",
+      "editEditor": "Edit Editor",
+      "scanLocalEditors": "Scan Local Editors",
+      "displayName": "Display Name",
+      "executablePath": "Executable Path",
+      "commandArgs": "Command Arguments",
+      "isDefault": "Default Editor",
+      "displayNamePlaceholder": "Please enter display name",
+      "executablePathPlaceholder": "Please enter executable path",
+      "commandArgsPlaceholder": "Please enter command arguments",
+      "confirmDelete": "Confirm Delete",
+      "confirmDeleteContent": "Are you sure you want to delete this editor?",
+      "createSuccess": "Created successfully",
+      "updateSuccess": "Updated successfully",
+      "deleteSuccess": "Deleted successfully",
+      "scanSuccess": "Scan completed",
+      "createFailed": "Creation failed",
+      "updateFailed": "Update failed",
+      "deleteFailed": "Deletion failed",
+      "scanFailed": "Scan failed",
+      "selectFileFailed": "Failed to select file",
+      "loadEditorsFailed": "Failed to load editor list"
+    }
   }
 }
