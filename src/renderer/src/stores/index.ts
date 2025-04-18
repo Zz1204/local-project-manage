@@ -8,7 +8,7 @@ const pinia = createPinia()
 // 这里配置需要同步的store，例如'theme'和'language'
 pinia.use(
   createPiniaSyncPlugin({
-    syncStores: ['theme', 'language']
+    syncStores: ['theme', 'language', 'editor']
   })
 )
 

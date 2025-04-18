@@ -1,6 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import { Folder, FolderOperationResult } from '../renderer/src/types/folder'
 import { Editor, EditorOperationResult } from '../renderer/src/types/editor'
+import { Project, ProjectOperationResult } from '../renderer/src/types/project'
 
 declare global {
   interface Window {
@@ -8,6 +9,11 @@ declare global {
     api: {
       setNativeTheme: (isDark: boolean) => void
       getSystemLanguage: () => Promise<string>
+      dialog: {
+        showOpenDialog: (
+          options: Electron.OpenDialogOptions
+        ) => Promise<Electron.OpenDialogReturnValue>
+      }
       window: {
         openRouteInNewWindow: (
           route: string,
@@ -51,23 +57,36 @@ declare global {
       }
       editor: {
         create: (
-          displayName: string,
-          executablePath: string,
-          commandArgs: string,
-          isDefault: boolean
+          editor: Omit<Editor, 'id' | 'createdAt' | 'updatedAt'>
         ) => Promise<EditorOperationResult>
         getAll: () => Promise<Editor[]>
-        update: (
-          id: number,
-          displayName: string,
-          executablePath: string,
-          commandArgs: string,
-          isDefault: boolean
-        ) => Promise<EditorOperationResult>
+        update: (id: number, editor: Partial<Editor>) => Promise<EditorOperationResult>
         delete: (id: number) => Promise<EditorOperationResult>
         setDefault: (id: number) => Promise<EditorOperationResult>
+        openProject: (
+          editorId: number,
+          projectPath: string,
+          projectId: number
+        ) => Promise<{ success: boolean }>
         scan: () => Promise<{ success: boolean; editors: Editor[] }>
       }
+      project: {
+        create: (
+          project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
+        ) => Promise<ProjectOperationResult>
+        getAll: (page: number, pageSize: number) => Promise<{ projects: Project[]; total: number }>
+        update: (id: number, project: Partial<Project>) => Promise<ProjectOperationResult>
+        delete: (id: number) => Promise<ProjectOperationResult>
+      }
+      shell: {
+        openPath: (path: string) => Promise<string>
+      }
+      detectVersionControl: (folderPath: string) => Promise<{
+        tool: 'git' | 'svn' | 'hg' | 'none'
+        branch: string | null
+        success: boolean
+        error?: string
+      } | null>
     }
   }
 }

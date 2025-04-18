@@ -1,6 +1,7 @@
 export interface Folder {
   id: number
   name: string
+  path: string
   parent_id: number | null
   description: string
   created_at: string

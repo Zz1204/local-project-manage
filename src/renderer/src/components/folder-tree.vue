@@ -124,7 +124,9 @@ function renderSwitcherIconWithExpaned({ expanded }: { expanded: boolean }) {
 
 <template>
   <div class="project-tree h-full flex flex-col">
-    <div class="p-16px flex justify-between items-center">
+    <div
+      class="h-48px px-16px flex items-center justify-between b-b-1px b-b-solid b-b-dividerColor"
+    >
       <div class="font-bold text-16px">{{ t('folder.folderList') }}</div>
       <div class="flex items-center gap-8px">
         <NButton type="primary" size="tiny" @click="handleRefresh">
@@ -141,23 +143,30 @@ function renderSwitcherIconWithExpaned({ expanded }: { expanded: boolean }) {
     </div>
 
     <div class="flex-1 min-h-0">
-      <n-scrollbar style="height: 100%">
-        <div class="p-x-16px">
-          <NTree
-            block-line
-            show-line
-            virtual-scroll
-            :default-expand-all="true"
-            :data="treeData"
-            :selected-keys="selectedKeys"
-            :expanded-keys="expandKeys"
-            :on-update:expanded-keys="handleExpandKeys"
-            :render-label="renderTreeLabel"
-            :render-switcher-icon="renderSwitcherIconWithExpaned"
-            @update:selected-keys="handleSelect"
-          />
+      <template v-if="treeData.length > 0">
+        <n-scrollbar style="height: 100%">
+          <div class="p-x-16px">
+            <NTree
+              block-line
+              show-line
+              virtual-scroll
+              :default-expand-all="true"
+              :data="treeData"
+              :selected-keys="selectedKeys"
+              :expanded-keys="expandKeys"
+              :on-update:expanded-keys="handleExpandKeys"
+              :render-label="renderTreeLabel"
+              :render-switcher-icon="renderSwitcherIconWithExpaned"
+              @update:selected-keys="handleSelect"
+            />
+          </div>
+        </n-scrollbar>
+      </template>
+      <template v-else>
+        <div class="h-full flex items-center justify-center">
+          <n-empty size="large" />
         </div>
-      </n-scrollbar>
+      </template>
     </div>
   </div>
 </template>

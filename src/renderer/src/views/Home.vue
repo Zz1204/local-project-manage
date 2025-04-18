@@ -3,6 +3,7 @@ import ThemeSwitch from '@renderer/components/theme-switch.vue'
 import LanguageSwitch from '@renderer/components/language-switch.vue'
 import Versions from '@renderer/components/versions.vue'
 import FolderTree from '@renderer/components/folder-tree.vue'
+import ProjectList from '@renderer/components/project-list.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -34,8 +35,8 @@ const openSetting = () => {
       <n-layout-sider content-style="height: 100%;" bordered>
         <folder-tree />
       </n-layout-sider>
-      <n-layout content-style="padding: 24px;" :native-scrollbar="false">
-        <n-h2>平山道</n-h2>
+      <n-layout>
+        <project-list />
       </n-layout>
     </n-layout>
     <n-layout-footer position="absolute" class="h-22px flex items-center px-16px" bordered>

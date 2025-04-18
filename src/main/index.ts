@@ -11,8 +11,15 @@ import {
   openOrFocusWindowForRoute,
   type WindowOptions
 } from './window-manager'
-import { folderOperations, settingsOperations, editorOperations } from './database'
+import {
+  folderOperations,
+  settingsOperations,
+  editorOperations,
+  projectOperations
+} from './database'
 import { scanEditorsService } from './editor-service'
+import { detectVersionControl } from './version-control-service'
+import { Editor } from '../renderer/src/types/editor'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -88,6 +95,25 @@ app.whenReady().then(() => {
       return await dialog.showOpenDialog(options)
     } catch (error) {
       log.error('显示文件选择对话框失败:', error)
+      throw error
+    }
+  })
+
+  // 处理打开项目路径
+  ipcMain.handle('shell:openPath', async (_, path: string) => {
+    try {
+      if (process.platform === 'win32' || process.platform === 'darwin') {
+        // Windows 和 macOS 使用 shell.openExternal
+        await shell.openExternal(`file://${path}`, {
+          activate: true // 在 macOS 上激活应用程序
+        })
+      } else {
+        // Linux 使用 shell.openPath
+        await shell.openPath(path)
+      }
+      return 'success'
+    } catch (error) {
+      console.error('Error opening path:', error)
       throw error
     }
   })
@@ -263,17 +289,19 @@ app.whenReady().then(() => {
   })
 
   // 编辑器相关的 IPC 处理
-  ipcMain.handle(
-    'editor:create',
-    (_, displayName: string, executablePath: string, commandArgs: string, isDefault: boolean) => {
-      try {
-        return editorOperations.createEditor(displayName, executablePath, commandArgs, isDefault)
-      } catch (error) {
-        log.error('创建编辑器失败:', error)
-        throw error
-      }
+  ipcMain.handle('editor:create', (_, editor: Editor) => {
+    try {
+      return editorOperations.createEditor(
+        editor.displayName,
+        editor.executablePath,
+        editor.commandArgs,
+        editor.isDefault
+      )
+    } catch (error) {
+      log.error('创建编辑器失败:', error)
+      throw error
     }
-  )
+  })
 
   ipcMain.handle('editor:getAll', () => {
     try {
@@ -284,30 +312,14 @@ app.whenReady().then(() => {
     }
   })
 
-  ipcMain.handle(
-    'editor:update',
-    (
-      _,
-      id: number,
-      displayName: string,
-      executablePath: string,
-      commandArgs: string,
-      isDefault: boolean
-    ) => {
-      try {
-        return editorOperations.updateEditor(
-          id,
-          displayName,
-          executablePath,
-          commandArgs,
-          isDefault
-        )
-      } catch (error) {
-        log.error('更新编辑器失败:', error)
-        throw error
-      }
+  ipcMain.handle('editor:update', (_, id: number, editor: Partial<Editor>) => {
+    try {
+      return editorOperations.updateEditor(id, editor)
+    } catch (error) {
+      log.error('更新编辑器失败:', error)
+      throw error
     }
-  )
+  })
 
   ipcMain.handle('editor:delete', (_, id: number) => {
     try {
@@ -364,6 +376,105 @@ app.whenReady().then(() => {
       throw error
     }
   })
+
+  // 项目相关的 IPC 处理
+  ipcMain.handle('project:create', async (_, project) => {
+    try {
+      return projectOperations.createProject(project)
+    } catch (error) {
+      log.error('创建项目失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('project:getAll', async (_, page, pageSize) => {
+    try {
+      return projectOperations.getAllProjects(page, pageSize)
+    } catch (error) {
+      log.error('获取项目列表失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('project:update', async (_, id, project) => {
+    try {
+      return projectOperations.updateProject(id, project)
+    } catch (error) {
+      log.error('更新项目失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('project:delete', async (_, id) => {
+    try {
+      return projectOperations.deleteProject(id)
+    } catch (error) {
+      log.error('删除项目失败:', error)
+      throw error
+    }
+  })
+
+  // 添加 IPC 处理程序
+  ipcMain.handle('detect-version-control', async (_, folderPath: string) => {
+    return await detectVersionControl(folderPath)
+  })
+
+  // 处理在编辑器中打开项目
+  ipcMain.handle(
+    'editor:openProject',
+    async (_, editorId: number, projectPath: string, projectId: number) => {
+      try {
+        // 获取编辑器信息
+        const editor = await editorOperations.getAllEditors().find((e) => e.id === editorId)
+        if (!editor) {
+          throw new Error('编辑器不存在')
+        }
+
+        // 根据操作系统处理路径
+        const normalizedProjectPath =
+          process.platform === 'win32'
+            ? projectPath.replace(/\//g, '\\') // Windows 使用反斜杠
+            : projectPath.replace(/\\/g, '/') // Unix-like 系统使用正斜杠
+
+        // 构建命令，处理 commandArgs 为空的情况
+        let command = ''
+        if (editor.commandArgs && editor.commandArgs.trim()) {
+          // 替换路径占位符，同时处理不同操作系统的路径格式
+          const args = editor.commandArgs.replace('{path}', `"${normalizedProjectPath}"`)
+          command = `"${editor.executablePath}" ${args}`
+        } else {
+          // 如果没有配置命令参数，直接使用路径
+          command = `"${editor.executablePath}" "${normalizedProjectPath}"`
+        }
+
+        log.info('打开项目命令:', command)
+
+        // 执行命令
+        const { exec } = require('child_process')
+        exec(command, (error: Error | null) => {
+          if (error) {
+            log.error('打开项目失败:', error)
+          }
+        })
+
+        // 更新项目的最后打开时间
+        try {
+          // 使用 projectOperations 更新
+          const result = await projectOperations.updateProject(projectId, {
+            lastOpenTime: Date.now()
+          })
+          log.info('更新项目最后打开时间:', { projectPath, result })
+        } catch (dbError) {
+          log.error('更新项目最后打开时间失败:', dbError)
+        }
+
+        return { success: true }
+      } catch (error) {
+        log.error('打开项目失败:', error)
+        return { success: false, error: error.message }
+      }
+    }
+  )
 
   createMainWindow()
 

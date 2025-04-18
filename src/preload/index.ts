@@ -11,6 +11,12 @@ const api = {
   getSystemLanguage: () => {
     return ipcRenderer.invoke('get-system-language')
   },
+  // 对话框相关API
+  dialog: {
+    showOpenDialog: (options: Electron.OpenDialogOptions) => {
+      return ipcRenderer.invoke('dialog:showOpenDialog', options)
+    }
+  },
   // 窗口管理相关API
   window: {
     // 创建新窗口并打开指定路由
@@ -86,25 +92,26 @@ const api = {
   },
   // 编辑器相关的 IPC 通信接口
   editor: {
-    create: (
-      displayName: string,
-      executablePath: string,
-      commandArgs: string,
-      isDefault: boolean
-    ) => ipcRenderer.invoke('editor:create', displayName, executablePath, commandArgs, isDefault),
+    create: (editor) => ipcRenderer.invoke('editor:create', editor),
     getAll: () => ipcRenderer.invoke('editor:getAll'),
-    update: (
-      id: number,
-      displayName: string,
-      executablePath: string,
-      commandArgs: string,
-      isDefault: boolean
-    ) =>
-      ipcRenderer.invoke('editor:update', id, displayName, executablePath, commandArgs, isDefault),
-    delete: (id: number) => ipcRenderer.invoke('editor:delete', id),
-    setDefault: (id: number) => ipcRenderer.invoke('editor:setDefault', id),
+    update: (id, editor) => ipcRenderer.invoke('editor:update', id, editor),
+    delete: (id) => ipcRenderer.invoke('editor:delete', id),
+    setDefault: (id) => ipcRenderer.invoke('editor:setDefault', id),
+    openProject: (editorId, projectPath, projectId) =>
+      ipcRenderer.invoke('editor:openProject', editorId, projectPath),
     scan: () => ipcRenderer.invoke('editor:scan')
-  }
+  },
+  project: {
+    create: (project) => ipcRenderer.invoke('project:create', project),
+    getAll: (page, pageSize) => ipcRenderer.invoke('project:getAll', page, pageSize),
+    update: (id, project) => ipcRenderer.invoke('project:update', id, project),
+    delete: (id) => ipcRenderer.invoke('project:delete', id)
+  },
+  shell: {
+    openPath: (path: string) => ipcRenderer.invoke('shell:openPath', path)
+  },
+  detectVersionControl: (folderPath: string) =>
+    ipcRenderer.invoke('detect-version-control', folderPath)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

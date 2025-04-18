@@ -26,12 +26,7 @@ export const useEditorStore = defineStore('editor', () => {
     try {
       isLoading.value = true
       error.value = null
-      const result = await window.api.editor.create(
-        editor.displayName,
-        editor.executablePath,
-        editor.commandArgs,
-        editor.isDefault
-      )
+      const result = await window.api.editor.create(editor)
       console.log('createEditor', result)
       if (result.success) {
         await fetchEditors()
@@ -51,13 +46,7 @@ export const useEditorStore = defineStore('editor', () => {
     try {
       isLoading.value = true
       error.value = null
-      const result = await window.api.editor.update(
-        editor.id,
-        editor.displayName,
-        editor.executablePath,
-        editor.commandArgs,
-        editor.isDefault
-      )
+      const result = await window.api.editor.update(editor.id, editor)
       if (result.success) {
         await fetchEditors()
       }

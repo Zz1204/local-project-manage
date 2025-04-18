@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { app } from 'electron'
 import path from 'path'
 import log from './logger'
+import { Editor } from '../renderer/src/types/editor'
 
 // 数据库文件路径
 const DB_PATH = path.join(app.getPath('userData'), 'database.sqlite')
@@ -97,6 +98,31 @@ function initDatabase(): void {
         'updated_at',
         'INTEGER DEFAULT (strftime("%s", "now") * 1000)'
       )
+    }
+
+    // 创建项目表（如果不存在）
+    if (!tableExists('projects')) {
+      db.exec(`
+        CREATE TABLE projects (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          editor_id INTEGER,
+          folder_id INTEGER,
+          version_control_tool TEXT,
+          branch TEXT,
+          is_favorite INTEGER DEFAULT 0,
+          last_open_time INTEGER,
+          path TEXT,
+          created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
+          updated_at INTEGER DEFAULT (strftime('%s', 'now') * 1000),
+          FOREIGN KEY (editor_id) REFERENCES editors(id) ON DELETE SET NULL,
+          FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL
+        )
+      `)
+    } else {
+      // 检查并添加缺失的列
+      addColumnIfNotExists('projects', 'last_open_time', 'INTEGER')
     }
 
     log.info('数据库初始化成功')
@@ -215,22 +241,59 @@ const editorOperations = {
   },
 
   // 更新编辑器
-  updateEditor: (
-    id: number,
-    displayName: string,
-    executablePath: string,
-    commandArgs: string,
-    isDefault: boolean
-  ) => {
+  updateEditor: (id: number, editor: Partial<Editor>) => {
+    const updates: string[] = []
+    const values: any[] = []
+
+    // 动态构建 SET 子句
+    if (editor.displayName !== undefined) {
+      updates.push('display_name = ?')
+      values.push(editor.displayName)
+    }
+    // 关键：仅在提供了非空 executablePath 时才更新
+    if (editor.executablePath !== undefined && editor.executablePath !== null) {
+      updates.push('executable_path = ?')
+      values.push(editor.executablePath)
+    } else if (editor.executablePath === null) {
+      // 如果显式传递了 null，则需要处理（取决于业务逻辑，这里先报错或忽略）
+      // 目前的 NOT NULL 约束不允许设置为 null，所以这里应该避免或抛出错误
+      log.warn('尝试将 executable_path 更新为 null，已忽略', { id })
+      // 或者抛出错误：throw new Error('executable_path 不能为空')
+    }
+    if (editor.commandArgs !== undefined) {
+      updates.push('command_args = ?')
+      values.push(editor.commandArgs)
+    }
+    if (editor.isDefault !== undefined) {
+      updates.push('is_default = ?')
+      values.push(editor.isDefault ? 1 : 0)
+    }
+
+    // 如果没有要更新的字段，则直接返回
+    if (updates.length === 0) {
+      log.info('没有需要更新的编辑器字段', { id })
+      return { success: true } // 或者返回 false 表示未更新？
+    }
+
+    // 添加 updated_at 更新
+    updates.push("updated_at = strftime('%s', 'now') * 1000")
+    values.push(id) // 将 id 添加到值的末尾用于 WHERE 子句
+
     const stmt = db.prepare(`
       UPDATE editors
-      SET display_name = ?, executable_path = ?, command_args = ?, is_default = ?, updated_at = strftime('%s', 'now') * 1000
+      SET ${updates.join(', ')}
       WHERE id = ?
     `)
-    log.info('更新编辑器', { id, displayName })
-    let result = stmt.run(displayName, executablePath, commandArgs, isDefault ? 1 : 0, id)
-    log.info('更新编辑器结果', { result })
-    return { success: result.changes > 0 }
+
+    log.info('更新编辑器', { id, updates: editor })
+    try {
+      const result = stmt.run(...values)
+      log.info('更新编辑器结果', { result })
+      return { success: result.changes > 0 }
+    } catch (error) {
+      log.error('数据库更新编辑器失败:', error)
+      throw error
+    }
   },
 
   // 删除编辑器
@@ -252,7 +315,149 @@ const editorOperations = {
   }
 }
 
+// 项目相关的数据库操作
+const projectOperations = {
+  // 创建项目
+  createProject: (project: {
+    name: string
+    description: string
+    editorId: number | null
+    folderId: number | null
+    versionControlTool: string
+    branch: string
+    isFavorite: boolean
+    path: string | null
+  }) => {
+    const stmt = db.prepare(`
+      INSERT INTO projects (
+        name, description, editor_id, folder_id,
+        version_control_tool, branch, is_favorite, path
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    log.info('创建项目', project)
+    const result = stmt.run(
+      project.name,
+      project.description,
+      project.editorId,
+      project.folderId,
+      project.versionControlTool,
+      project.branch,
+      project.isFavorite ? 1 : 0,
+      project.path
+    )
+    return { success: result.changes > 0, lastInsertRowid: result.lastInsertRowid }
+  },
+
+  // 获取所有项目（分页）
+  getAllProjects: (page: number, pageSize: number) => {
+    const offset = (page - 1) * pageSize
+    console.log('获取所有项目', { page, pageSize, offset })
+    const countStmt = db.prepare('SELECT COUNT(*) as total FROM projects')
+    const stmt = db.prepare(`
+      SELECT
+        id,
+        name,
+        description,
+        editor_id as editorId,
+        folder_id as folderId,
+        version_control_tool as versionControlTool,
+        branch,
+        path,
+        is_favorite as isFavorite,
+        last_open_time as lastOpenTime,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM projects
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `)
+
+    const total = countStmt.get().total
+    const projects = stmt.all(pageSize, offset)
+    return { projects, total }
+  },
+
+  // 更新项目
+  updateProject: (
+    id: number,
+    project: {
+      name?: string
+      description?: string
+      editorId?: number | null
+      folderId?: number | null
+      versionControlTool?: string
+      branch?: string
+      isFavorite?: boolean
+      lastOpenTime?: number | null
+      path?: string | null
+    }
+  ) => {
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (project.name !== undefined) {
+      updates.push('name = ?')
+      values.push(project.name)
+    }
+    if (project.description !== undefined) {
+      updates.push('description = ?')
+      values.push(project.description)
+    }
+    if (project.editorId !== undefined) {
+      updates.push('editor_id = ?')
+      values.push(project.editorId)
+    }
+    if (project.folderId !== undefined) {
+      updates.push('folder_id = ?')
+      values.push(project.folderId)
+    }
+    if (project.versionControlTool !== undefined) {
+      updates.push('version_control_tool = ?')
+      values.push(project.versionControlTool)
+    }
+    if (project.branch !== undefined) {
+      updates.push('branch = ?')
+      values.push(project.branch)
+    }
+    if (project.isFavorite !== undefined) {
+      updates.push('is_favorite = ?')
+      values.push(project.isFavorite ? 1 : 0)
+    }
+    if (project.lastOpenTime !== undefined) {
+      updates.push('last_open_time = ?')
+      values.push(project.lastOpenTime)
+    }
+    if (project.path !== undefined) {
+      updates.push('path = ?')
+      values.push(project.path)
+    }
+
+    updates.push("updated_at = strftime('%s', 'now') * 1000")
+    values.push(id)
+
+    const stmt = db.prepare(`
+      UPDATE projects
+      SET ${updates.join(', ')}
+      WHERE id = ?
+    `)
+
+    log.info('更新项目', project)
+    const result = stmt.run(...values)
+    return { success: result.changes > 0 }
+  },
+
+  // 删除项目
+  deleteProject: (id: number) => {
+    const stmt = db.prepare('DELETE FROM projects WHERE id = ?')
+    log.info('删除项目', { id })
+    const result = stmt.run(id)
+    return { success: result.changes > 0 }
+  }
+}
+
 // 初始化数据库
 initDatabase()
 
-export { folderOperations, settingsOperations, editorOperations }
+export { folderOperations, settingsOperations, editorOperations, projectOperations }
