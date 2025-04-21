@@ -1,4 +1,4 @@
-appId: com.yourusername.localprojectmanage
+appId: com.Zz1204.localprojectmanage
 productName: local-project-manage
 directories:
   buildResources: build
@@ -43,7 +43,7 @@ appImage:
 npmRebuild: false
 publish:
   provider: github
-  owner: your-github-username
+  owner: Zz1204
   repo: local-project-manage
   private: false
   releaseType: release

@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "description": "本地项目管理工具",
   "main": "./out/main/index.js",
-  "author": "your-github-username",
-  "homepage": "https://github.com/your-github-username/local-project-manage",
+  "author": "Zz1204",
+  "homepage": "https://github.com/Zz1204/local-project-manage",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-github-username/local-project-manage.git"
+    "url": "https://github.com/Zz1204/local-project-manage.git"
   },
   "scripts": {
     "format": "prettier --write .",
