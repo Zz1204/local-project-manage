@@ -20,6 +20,9 @@ import {
 import { scanEditorsService } from './editor-service'
 import { detectVersionControl } from './version-control-service'
 import { Editor } from '../renderer/src/types/editor'
+import { getGitStatus } from './git'
+import { detectProjectType } from './project-type-detector'
+import type { ProjectTypeInfo } from '../renderer/src/types/project'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -465,6 +468,24 @@ app.whenReady().then(() => {
       }
     }
   )
+
+  ipcMain.handle('project:getGitStatus', async (_, projectPath: string) => {
+    try {
+      return await getGitStatus(projectPath)
+    } catch (error) {
+      log.error('获取Git状态失败:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('project:detectType', async (_, projectPath: string): Promise<ProjectTypeInfo> => {
+    try {
+      return await detectProjectType(projectPath)
+    } catch (error) {
+      log.error('检测项目类型失败:', error)
+      throw error
+    }
+  })
 
   createMainWindow()
 

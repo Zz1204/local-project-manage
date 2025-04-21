@@ -421,8 +421,35 @@ const selectedFolderPath = computed(() => {
                   <n-tag size="small" type="success">
                     {{ project.versionControlTool }}
                   </n-tag>
-                  <n-tag size="small" type="warning">
-                    {{ project.branch }}
+                  <n-tag
+                    v-if="project.gitStatus"
+                    size="small"
+                    :type="project.gitStatus.isClean ? 'success' : 'warning'"
+                  >
+                    {{ project.gitStatus.branch }}
+                    <template v-if="!project.gitStatus.isClean">
+                      ({{ project.gitStatus.modified + project.gitStatus.staged }} 个更改)
+                    </template>
+                  </n-tag>
+                  <n-tag
+                    v-if="project.gitStatus?.ahead || project.gitStatus?.behind"
+                    size="small"
+                    type="info"
+                  >
+                    {{ project.gitStatus.ahead > 0 ? `↑${project.gitStatus.ahead}` : '' }}
+                    {{ project.gitStatus.behind > 0 ? `↓${project.gitStatus.behind}` : '' }}
+                  </n-tag>
+                  <n-tag v-if="project.projectType" size="small" type="info">
+                    {{ project.projectType.type }}
+                    <template v-if="project.projectType.framework">
+                      ({{ project.projectType.framework }})
+                    </template>
+                  </n-tag>
+                  <n-tag v-if="project.projectType?.language" size="small" type="success">
+                    {{ project.projectType.language }}
+                  </n-tag>
+                  <n-tag v-if="project.projectType?.packageManager" size="small">
+                    {{ project.projectType.packageManager }}
                   </n-tag>
                 </n-space>
                 <n-text depth="3" @click="openProjectPath(project.path)">

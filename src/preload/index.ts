@@ -106,7 +106,9 @@ const api = {
     getAll: (page, pageSize, folderId) =>
       ipcRenderer.invoke('project:getAll', page, pageSize, folderId),
     update: (id, project) => ipcRenderer.invoke('project:update', id, project),
-    delete: (id) => ipcRenderer.invoke('project:delete', id)
+    delete: (id) => ipcRenderer.invoke('project:delete', id),
+    getGitStatus: (projectPath: string) => ipcRenderer.invoke('project:getGitStatus', projectPath),
+    detectType: (projectPath: string) => ipcRenderer.invoke('project:detectType', projectPath)
   },
   shell: {
     openPath: (path: string) => ipcRenderer.invoke('shell:openPath', path)

@@ -1,7 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import { Folder, FolderOperationResult } from '../renderer/src/types/folder'
 import { Editor, EditorOperationResult } from '../renderer/src/types/editor'
-import { Project, ProjectOperationResult } from '../renderer/src/types/project'
+import { Project, ProjectOperationResult, ProjectTypeInfo } from '../renderer/src/types/project'
 
 declare global {
   interface Window {
@@ -81,6 +81,21 @@ declare global {
         ) => Promise<{ projects: Project[]; total: number; totalPages: number }>
         update: (id: number, project: Partial<Project>) => Promise<ProjectOperationResult>
         delete: (id: number) => Promise<ProjectOperationResult>
+        getGitStatus: (projectPath: string) => Promise<{
+          branch: string
+          isClean: boolean
+          ahead: number
+          behind: number
+          modified: number
+          staged: number
+          untracked: number
+          lastCommit: {
+            hash: string
+            message: string
+            date: string
+          }
+        } | null>
+        detectType: (projectPath: string) => Promise<ProjectTypeInfo>
       }
       shell: {
         openPath: (path: string) => Promise<string>
@@ -94,3 +109,5 @@ declare global {
     }
   }
 }
+
+export {}

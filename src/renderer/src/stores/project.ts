@@ -43,8 +43,30 @@ export const useProjectStore = defineStore('project', () => {
         pagination.value.pageSize,
         folderStore.selectedFolderId
       )
-      console.log('加载的项目数据:', result.projects)
-      projects.value = result.projects
+
+      const projectsWithInfo = await Promise.all(
+        result.projects.map(async (project) => {
+          const updates: Partial<Project> = {}
+
+          // 获取Git状态
+          if (project.path && project.versionControlTool === 'git') {
+            updates.gitStatus = await window.api.project.getGitStatus(project.path)
+          }
+
+          // 检测项目类型
+          if (project.path) {
+            const typeInfo = await window.api.project.detectType(project.path)
+            updates.projectType = typeInfo
+          }
+
+          return {
+            ...project,
+            ...updates
+          }
+        })
+      )
+
+      projects.value = projectsWithInfo
       pagination.value.total = result.total
       pagination.value.totalPages = result.totalPages
     } catch (err) {
