@@ -100,6 +100,7 @@ jobs:
           files: |
             ./dist/*.exe
             ./dist/*.zip
+            ./dist/latest*.yml
 
   build-mac:
     needs: create-release
@@ -146,6 +147,7 @@ jobs:
         with:
           files: |
             ./dist/*.dmg
+            ./dist/latest*.yml
 
   build-linux:
     needs: create-release
@@ -193,3 +195,4 @@ jobs:
           files: |
             ./dist/*.AppImage
             ./dist/*.deb
+            ./dist/latest*.yml
