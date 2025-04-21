@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ThemeSwitch from '@renderer/components/theme-switch.vue'
 import LanguageSwitch from '@renderer/components/language-switch.vue'
-import Versions from '@renderer/components/versions.vue'
+import Versions from '@renderer/components/Versions.vue'
 import FolderTree from '@renderer/components/folder-tree.vue'
 import ProjectList from '@renderer/components/project-list.vue'
 import UpdateChecker from '@renderer/components/update-checker.vue'
