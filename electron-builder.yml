@@ -40,7 +40,8 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
-npmRebuild: false
+npmRebuild: true
+nodeGypRebuild: true
 publish:
   provider: github
   owner: Zz1204
