@@ -5,11 +5,17 @@ on:
     tags:
       - 'v*'
 
+# 明确指定所需权限
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
     outputs:
-      RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
       RELEASE_TAG: ${{ github.ref_name }}
 
     steps:
@@ -28,19 +34,14 @@ jobs:
         run: |
           npm install -g conventional-changelog-cli
           CHANGELOG=$(conventional-changelog -p angular -r 2)
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-          echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body: |
             ## 更新日志
             ${{ steps.changelog.outputs.CHANGELOG }}
@@ -69,24 +70,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.create-release.outputs.RELEASE_UPLOAD_URL }}
-          asset_path: ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-win.exe
-          asset_name: local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-win.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Windows portable artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.RELEASE_UPLOAD_URL }}
-          asset_path: ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-win.zip
-          asset_name: local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-win.zip
-          asset_content_type: application/zip
+          files: |
+            ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-setup.exe
+            ./dist/*.zip
 
   build-mac:
     needs: create-release
@@ -110,14 +98,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.create-release.outputs.RELEASE_UPLOAD_URL }}
-          asset_path: ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-mac.dmg
-          asset_name: local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-mac.dmg
-          asset_content_type: application/octet-stream
+          files: |
+            ./dist/*.dmg
 
   build-linux:
     needs: create-release
@@ -140,22 +124,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Linux AppImage artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Linux artifacts
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.create-release.outputs.RELEASE_UPLOAD_URL }}
-          asset_path: ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}.AppImage
-          asset_name: local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}.AppImage
-          asset_content_type: application/octet-stream
-
-      - name: Upload Linux deb artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.RELEASE_UPLOAD_URL }}
-          asset_path: ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}.deb
-          asset_name: local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}.deb
-          asset_content_type: application/octet-stream
+          files: |
+            ./dist/*.AppImage
+            ./dist/*.deb
