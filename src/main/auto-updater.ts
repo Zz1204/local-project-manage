@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from './logger'
+import path from 'node:path'
 
+const isDev = process.env.NODE_ENV === 'development'
 // 配置日志
 autoUpdater.logger = log
 autoUpdater.autoDownload = false
@@ -16,6 +18,11 @@ let mainWindow: BrowserWindow | null = null
 // 初始化自动更新
 export function initAutoUpdater(window: BrowserWindow): void {
   mainWindow = window
+
+  if (isDev) {
+    autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
+    autoUpdater.forceDevUpdateConfig = true
+  }
 
   // 检查更新
   autoUpdater.on('checking-for-update', () => {

@@ -1,6 +1,6 @@
 {
   "name": "local-project-manage",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "本地项目管理工具",
   "main": "./out/main/index.js",
   "author": "Zz1204",
