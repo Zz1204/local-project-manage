@@ -1,3 +1,14 @@
+## [0.0.2](https://github.com/Zz1204/local-project-manage/compare/v0.0.1...v0.0.2) (2025-04-21)
+
+
+### Features
+
+* 配置自动更新 ([ec40114](https://github.com/Zz1204/local-project-manage/commit/ec4011436aaa85e82a02324588e70a4652c50c16))
+
+
+
+## [0.0.2](https://github.com/Zz1204/local-project-manage/compare/v0.0.1...v0.0.2) (2025-04-21)
+
 ## 0.0.1 (2025-04-21)
 
 ### Features
