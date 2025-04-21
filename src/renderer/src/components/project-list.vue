@@ -14,8 +14,8 @@ declare global {
   interface Window {
     electronAPI: {
       detectVersionControl: (path: string) => Promise<{
-        type: string
-        branch: string
+        tool: string | null
+        branch: string | null
       }>
     }
   }
@@ -31,8 +31,8 @@ const { t } = useI18n()
 onMounted(async () => {
   await Promise.all([
     projectStore.loadProjects(),
-    editorStore.fetchEditors()
-    // folderStore.loadFolders()
+    editorStore.fetchEditors(),
+    folderStore.loadFolders()
   ])
 })
 
@@ -146,8 +146,7 @@ const rules = {
 const versionControlOptions = [
   { label: 'Git', value: 'git' },
   { label: 'SVN', value: 'svn' },
-  { label: 'Mercurial', value: 'hg' },
-  { label: '无', value: 'none' }
+  { label: 'Mercurial', value: 'hg' }
 ]
 
 // 计算属性：模态框标题
@@ -268,13 +267,13 @@ async function selectFolder() {
       try {
         const versionControlInfo = await window.api.detectVersionControl(result.filePaths[0])
         if (versionControlInfo && versionControlInfo.success) {
-          formModel.versionControlTool = versionControlInfo.tool
+          formModel.versionControlTool = versionControlInfo.tool || ''
           formModel.branch = versionControlInfo.branch || ''
           // message.success(
           //   `检测到版本控制工具: ${versionControlInfo.tool}, 分支: ${versionControlInfo.branch || 'master'}`
           // )
         } else {
-          formModel.versionControlTool = 'none'
+          formModel.versionControlTool = ''
           formModel.branch = ''
           // message.info('未检测到版本控制工具')
         }
@@ -296,8 +295,8 @@ const handleFolderSelect = async (folder: Folder) => {
   try {
     const result = await window.electronAPI.detectVersionControl(folder.path)
     if (result) {
-      formModel.versionControlTool = result.type
-      formModel.branchName = result.branch
+      formModel.versionControlTool = result.tool || ''
+      formModel.branchName = result.branch || ''
     }
   } catch (error) {
     console.error('Failed to detect version control:', error)
@@ -359,15 +358,28 @@ const selectedFolderPath = computed(() => {
       class="h-48px px-16px flex items-center justify-between b-b-1px b-b-solid b-b-dividerColor"
     >
       <div class="flex items-center">
-        <n-breadcrumb separator=">">
-          <n-breadcrumb-item v-for="folder in selectedFolderPath" :key="folder.id">
-            {{ folder.name }}
-          </n-breadcrumb-item>
-        </n-breadcrumb>
-        <div class="text-12px text-gray-500" v-if="projectStore.pagination.total > 0">
-          （<span class="text-12px">{{ projectStore.pagination.total }}</span
-          >）
-        </div>
+        <template v-if="selectedFolderPath.length > 0">
+          <n-breadcrumb separator=">">
+            <n-breadcrumb-item v-for="(folder, index) in selectedFolderPath" :key="folder.id">
+              <span
+                :class="{ 'font-bold text-primaryColor': index === selectedFolderPath.length - 1 }"
+              >
+                {{ folder.name }}
+              </span>
+            </n-breadcrumb-item>
+          </n-breadcrumb>
+          <div class="text-12px text-gray-500 ml-2" v-if="projectStore.pagination.total > 0">
+            （<span class="text-12px">{{ projectStore.pagination.total }}</span
+            >）
+          </div>
+        </template>
+        <template v-else>
+          <div class="font-bold text-16px">{{ t('folder.allProjects') }}</div>
+          <div class="text-12px text-gray-500 ml-2" v-if="projectStore.pagination.total > 0">
+            （<span class="text-12px">{{ projectStore.pagination.total }}</span
+            >）
+          </div>
+        </template>
       </div>
       <div>
         <n-button type="primary" size="tiny" @click="openFormModal()">
@@ -414,11 +426,16 @@ const selectedFolderPath = computed(() => {
               </template>
               <n-space vertical>
                 <n-text depth="3">{{ project.description }}</n-text>
+                <n-text depth="3" class="text-sm">
+                  {{ t('project.folder') }}：<span class="text-primaryColor">{{
+                    getFolderName(project.folderId)
+                  }}</span>
+                </n-text>
                 <n-space>
                   <n-tag size="small" @click="openProjectInEditor(project)">
                     {{ getEditorName(project.editorId) }}
                   </n-tag>
-                  <n-tag size="small" type="success">
+                  <n-tag size="small" type="success" v-if="project.versionControlTool">
                     {{ project.versionControlTool }}
                   </n-tag>
                   <n-tag

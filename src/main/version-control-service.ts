@@ -7,7 +7,7 @@ import log from './logger'
 const execAsync = promisify(exec)
 
 interface VersionControlInfo {
-  tool: 'git' | 'svn' | 'hg' | 'none'
+  tool: 'git' | 'svn' | 'hg' | null
   branch: string | null
   success: boolean
   error?: string
@@ -23,7 +23,7 @@ export async function detectVersionControl(folderPath: string): Promise<VersionC
     // 检查路径是否存在
     if (!fs.existsSync(folderPath)) {
       return {
-        tool: 'none',
+        tool: null,
         branch: null,
         success: false,
         error: '路径不存在'
@@ -34,7 +34,7 @@ export async function detectVersionControl(folderPath: string): Promise<VersionC
     const stats = fs.statSync(folderPath)
     if (!stats.isDirectory()) {
       return {
-        tool: 'none',
+        tool: null,
         branch: null,
         success: false,
         error: '路径不是目录'
@@ -105,14 +105,14 @@ export async function detectVersionControl(folderPath: string): Promise<VersionC
 
     // 没有检测到版本控制工具
     return {
-      tool: 'none',
+      tool: null,
       branch: null,
       success: true
     }
   } catch (error) {
     log.error('检测版本控制工具失败:', error)
     return {
-      tool: 'none',
+      tool: null,
       branch: null,
       success: false,
       error: '检测版本控制工具失败'

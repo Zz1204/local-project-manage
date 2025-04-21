@@ -48,12 +48,12 @@ const columns = computed(() => [
     width: 140,
     ellipsis: { tooltip: true }
   },
-  {
-    title: t('settings.editor.commandArgs'),
-    key: 'commandArgs',
-    width: 140,
-    ellipsis: { tooltip: true }
-  },
+  // {
+  //   title: t('settings.editor.commandArgs'),
+  //   key: 'commandArgs',
+  //   width: 140,
+  //   ellipsis: { tooltip: true }
+  // },
   {
     title: t('common.actions'),
     key: 'actions',
@@ -294,12 +294,12 @@ onMounted(() => {
               <n-button @click="handleSelectExecutable">{{ t('common.selectFile') }}</n-button>
             </n-input-group>
           </n-form-item>
-          <n-form-item :label="t('settings.editor.commandArgs')" path="commandArgs">
+          <!-- <n-form-item :label="t('settings.editor.commandArgs')" path="commandArgs">
             <n-input
               v-model:value="formData.commandArgs"
               :placeholder="t('settings.editor.commandArgsPlaceholder')"
             />
-          </n-form-item>
+          </n-form-item> -->
           <n-form-item class="flex justify-end">
             <n-space>
               <n-button type="primary" @click="handleSubmit" :loading="isLoading">
