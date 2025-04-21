@@ -40,8 +40,14 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
-npmRebuild: true
-nodeGypRebuild: true
+npmRebuild: false
+nodeGypRebuild: false
+asar: true
+asarUnpack:
+  - "**/*.node"
+extraMetadata:
+  dependencies:
+    better-sqlite3: '^8.7.0'
 publish:
   provider: github
   owner: Zz1204

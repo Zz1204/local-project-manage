@@ -12,6 +12,12 @@ permissions:
   issues: write
   pull-requests: write
 
+env:
+  # 禁用原生模块编译
+  ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+  ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+  ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -89,10 +95,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Windows build tools
+        run: |
+          npm config set msvs_version 2019
+          npm config set python "C:\hostedtoolcache\windows\Python\3.9.13\x64\python3.exe"
+
       - name: Build and package
         run: pnpm run build && pnpm run package:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+          npm_config_build_from_source: false
 
       - name: Upload Windows artifacts
         uses: softprops/action-gh-release@v1
@@ -140,6 +153,8 @@ jobs:
         run: pnpm run build && pnpm run package:mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+          npm_config_build_from_source: false
 
       - name: Upload macOS artifacts
         uses: softprops/action-gh-release@v1
@@ -186,6 +201,8 @@ jobs:
         run: pnpm run build && pnpm run package:linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+          npm_config_build_from_source: false
 
       - name: Upload Linux artifacts
         uses: softprops/action-gh-release@v1
