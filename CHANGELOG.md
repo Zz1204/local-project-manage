@@ -1,3 +1,17 @@
+## [0.0.3](https://github.com/Zz1204/local-project-manage/compare/v0.0.2...v0.0.3) (2025-04-21)
+
+
+### Bug Fixes
+
+* 名称 ([2cb4ce9](https://github.com/Zz1204/local-project-manage/commit/2cb4ce9d3ffc8d206439160de40c16d28e829173))
+
+
+### Features
+
+* test ([843ef36](https://github.com/Zz1204/local-project-manage/commit/843ef36bd1d4d5a0c7279f455f71a038ae072589))
+
+
+
 ## [0.0.2](https://github.com/Zz1204/local-project-manage/compare/v0.0.1...v0.0.2) (2025-04-21)
 
 
