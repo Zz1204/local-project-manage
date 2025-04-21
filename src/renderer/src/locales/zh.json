@@ -24,7 +24,8 @@
     "folderList": "文件夹列表",
     "createFolder": "新建文件夹",
     "folderName": "文件夹名称",
-    "deleteFolder": "确认删除此文件夹吗？"
+    "deleteFolder": "确认删除此文件夹吗？",
+    "allProjects": "所有项目"
   },
   "project": {
     "title": "项目列表",

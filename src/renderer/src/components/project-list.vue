@@ -5,7 +5,8 @@ import { useEditorStore } from '@renderer/stores/editor'
 import { useFolderStore } from '@renderer/stores/folder'
 import type { Project } from '@renderer/types/project'
 import type { FormInst } from 'naive-ui'
-import type { Folder, FolderTreeItem } from '@renderer/types/folder'
+// 不再使用 Folder 类型
+// import type { Folder } from '@renderer/types/folder'
 import type { TreeOption } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -39,7 +40,7 @@ onMounted(async () => {
 // 监听选中的文件夹变化
 watch(
   () => folderStore.selectedFolderId,
-  (newFolderId) => {
+  () => {
     // 重置分页
     pageInfo.value.currentPage = 1
     // 重新加载项目
@@ -142,12 +143,12 @@ const rules = {
   }
 }
 
-// 版本控制工具选项
-const versionControlOptions = [
-  { label: 'Git', value: 'git' },
-  { label: 'SVN', value: 'svn' },
-  { label: 'Mercurial', value: 'hg' }
-]
+// 版本控制工具选项 - 暂时不使用
+// const versionControlOptions = [
+//   { label: 'Git', value: 'git' },
+//   { label: 'SVN', value: 'svn' },
+//   { label: 'Mercurial', value: 'hg' }
+// ]
 
 // 计算属性：模态框标题
 const modalTitle = computed(() => {
@@ -288,20 +289,21 @@ async function selectFolder() {
   }
 }
 
-const handleFolderSelect = async (folder: Folder) => {
-  formModel.folderId = folder.id
-  formModel.folderPath = folder.path
+// 暂时不使用
+// const handleFolderSelect = async (folder: Folder) => {
+//   formModel.folderId = folder.id
+//   formModel.folderPath = folder.path
 
-  try {
-    const result = await window.electronAPI.detectVersionControl(folder.path)
-    if (result) {
-      formModel.versionControlTool = result.tool || ''
-      formModel.branchName = result.branch || ''
-    }
-  } catch (error) {
-    console.error('Failed to detect version control:', error)
-  }
-}
+//   try {
+//     const result = await window.electronAPI.detectVersionControl(folder.path)
+//     if (result) {
+//       formModel.versionControlTool = result.tool || ''
+//       formModel.branchName = result.branch || ''
+//     }
+//   } catch (error) {
+//     console.error('Failed to detect version control:', error)
+//   }
+// }
 
 const handleDropdownSelect = (key: string, projectId: number) => {
   console.log('下拉菜单选择:', key, projectId)

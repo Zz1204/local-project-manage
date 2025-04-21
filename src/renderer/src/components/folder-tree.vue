@@ -26,7 +26,8 @@ const {
 const treeData = computed(() => {
   return folderStore.folderTree
 })
-const selectedKeys = ref<string[]>([])
+// 不再使用这个变量，因为我们直接使用 folderStore.selectedFolderId
+// const selectedKeys = ref<string[]>([])
 const expandKeys = ref<number[]>([])
 
 // 展开的key

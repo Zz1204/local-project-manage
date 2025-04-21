@@ -106,6 +106,20 @@ declare global {
         success: boolean
         error?: string
       } | null>
+      updater: {
+        checkForUpdates: () => Promise<any>
+        downloadUpdate: () => Promise<any>
+        quitAndInstall: () => Promise<any>
+        getStatus: () => Promise<{
+          updateAvailable: boolean
+          updateDownloaded: boolean
+          updateInfo: any
+        }>
+        onStatus: (callback: (status: { status: string; data?: any }) => void) => () => void
+      }
+      app: {
+        getVersion: () => Promise<string>
+      }
     }
   }
 }
