@@ -98,8 +98,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            # 使用 replace 函数去掉前缀 v
-            ./dist/local-project-manage-${{ replace(needs.create-release.outputs.RELEASE_TAG, 'v', '') }}-setup.exe
+            ./dist/*.exe
             ./dist/*.zip
 
   build-mac:
@@ -193,4 +192,4 @@ jobs:
         with:
           files: |
             ./dist/*.AppImage
-            ./dist/*.snap
+            ./dist/*.deb
