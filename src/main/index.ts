@@ -23,6 +23,7 @@ import { Editor } from '../renderer/src/types/editor'
 import { getGitStatus } from './git'
 import { detectProjectType } from './project-type-detector'
 import type { ProjectTypeInfo } from '../renderer/src/types/project'
+import { initAutoUpdater, getAppVersion } from './auto-updater'
 
 // 第一步：在所有其他导入前设置控制台编码
 if (process.platform === 'win32') {
@@ -65,6 +66,14 @@ function createMainWindow(): void {
 
   mainWindow.on('closed', () => {
     closeAllWindows()
+  })
+
+  // 初始化自动更新
+  initAutoUpdater(mainWindow)
+
+  // 添加版本信息IPC处理
+  ipcMain.handle('app:get-version', () => {
+    return getAppVersion()
   })
 }
 

@@ -1,10 +1,14 @@
 {
-  "name": "project-manage",
-  "version": "1.0.0",
-  "description": "An Electron application with Vue and TypeScript",
+  "name": "local-project-manage",
+  "version": "0.0.1",
+  "description": "本地项目管理工具",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "your-github-username",
+  "homepage": "https://github.com/your-github-username/local-project-manage",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-github-username/local-project-manage.git"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -18,7 +22,12 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:linux": "npm run build && electron-builder --linux",
+    "package:win": "electron-builder --win --publish never",
+    "package:mac": "electron-builder --mac --publish never",
+    "package:linux": "electron-builder --linux --publish never",
+    "release": "electron-builder --publish always",
+    "generate:changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
@@ -38,6 +47,7 @@
     "@unocss/reset": "66.1.0-beta.11",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vitejs/plugin-vue-jsx": "^4.1.2",
+    "conventional-changelog-cli": "^4.1.0",
     "electron": "35.1.4",
     "electron-builder": "^25.1.8",
     "electron-rebuild": "^3.2.9",

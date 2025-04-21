@@ -1,0 +1,9 @@
+## 0.0.1 (2025-04-21)
+
+### Features
+
+* 更新项目管理功能，支持按文件夹查询项目，优化分页逻辑，增强用户体验 ([d42ed6c](https://github.com/your-github-username/local-project-manage/commit/d42ed6c48b836b6726c26218ef34d2ff67c61091))
+* 添加编辑器管理功能，支持编辑器的创建、更新、删除和扫描，优化数据库操作，增强用户体验 ([1200b9d](https://github.com/your-github-username/local-project-manage/commit/1200b9d6de0fb6c872ef9598e9dd3847523759f9))
+* 新增 Naive UI 离散 API 组件，优化主题切换逻辑 ([fb5cc7e](https://github.com/your-github-username/local-project-manage/commit/fb5cc7e13fccec171fd8dc297a0f0ddd2a06d8e8))
+* 新增设置页面布局和功能 ([2c1db8c](https://github.com/your-github-username/local-project-manage/commit/2c1db8c4cdf07757d449ee9f42d09405e18d3765))
+* 新增项目管理功能，支持项目的创建、更新、删除和查询，优化数据库操作，增强用户体验 ([196c75c](https://github.com/your-github-username/local-project-manage/commit/196c75cf611d95d7af4326fdd4e4520a7b80e688))

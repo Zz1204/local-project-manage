@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: project-manage
+appId: com.yourusername.localprojectmanage
+productName: local-project-manage
 directories:
   buildResources: build
 files:
@@ -12,7 +12,10 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: project-manage
+  executableName: local-project-manage
+  target:
+    - nsis
+    - zip
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -39,7 +42,10 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: your-github-username
+  repo: local-project-manage
+  private: false
+  releaseType: release
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

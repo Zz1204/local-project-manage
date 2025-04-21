@@ -114,7 +114,23 @@ const api = {
     openPath: (path: string) => ipcRenderer.invoke('shell:openPath', path)
   },
   detectVersionControl: (folderPath: string) =>
-    ipcRenderer.invoke('detect-version-control', folderPath)
+    ipcRenderer.invoke('detect-version-control', folderPath),
+  // 自动更新相关API
+  updater: {
+    checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
+    downloadUpdate: () => ipcRenderer.invoke('updater:download-update'),
+    quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
+    getStatus: () => ipcRenderer.invoke('updater:get-status'),
+    onStatus: (callback) => {
+      const listener = (_, data) => callback(data)
+      ipcRenderer.on('updater:status', listener)
+      return () => ipcRenderer.removeListener('updater:status', listener)
+    }
+  },
+  // 应用版本相关API
+  app: {
+    getVersion: () => ipcRenderer.invoke('app:get-version')
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -4,6 +4,7 @@ import LanguageSwitch from '@renderer/components/language-switch.vue'
 import Versions from '@renderer/components/versions.vue'
 import FolderTree from '@renderer/components/folder-tree.vue'
 import ProjectList from '@renderer/components/project-list.vue'
+import UpdateChecker from '@renderer/components/update-checker.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -24,6 +25,7 @@ const openSetting = () => {
     <n-layout-header class="h-48px flex items-center justify-between px-16px" bordered>
       <div class="text-primaryColor text-24px font-bold">{{ t('common.title') }}</div>
       <div class="flex items-center gap-2">
+        <update-checker />
         <theme-switch />
         <language-switch />
         <div class="flex items-center gap-2 cursor-pointer" @click="openSetting">

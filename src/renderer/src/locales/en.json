@@ -70,6 +70,20 @@
     "notDetected": "No version control tool detected",
     "detectFailed": "Failed to detect version control"
   },
+  "update": {
+    "check": "Check for Updates",
+    "newVersion": "New Version Available",
+    "currentVersion": "Current Version",
+    "releaseNotes": "Release Notes",
+    "download": "Download Update",
+    "install": "Install Update",
+    "downloadComplete": "Update Downloaded",
+    "noUpdates": "You are up to date",
+    "checkFailed": "Failed to check for updates",
+    "downloadFailed": "Failed to download update",
+    "installFailed": "Failed to install update",
+    "error": "Update Error"
+  },
   "settings": {
     "common": "Common",
     "idea": "IDE Management",
