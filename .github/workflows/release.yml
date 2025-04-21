@@ -98,7 +98,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG }}-setup.exe
+            ./dist/local-project-manage-${{ needs.create-release.outputs.RELEASE_TAG#v }}-setup.exe
             ./dist/*.zip
 
   build-mac:
@@ -192,4 +192,4 @@ jobs:
         with:
           files: |
             ./dist/*.AppImage
-            ./dist/*.deb
+            ./dist/*.snap
